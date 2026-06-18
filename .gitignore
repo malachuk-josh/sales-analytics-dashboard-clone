@@ -1,0 +1,5 @@
+.vercel
+node_modules
+dist
+.tmp-pkgs
+.vercel.bak-20260612-1803

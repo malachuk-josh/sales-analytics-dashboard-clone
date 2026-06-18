@@ -1,0 +1,27 @@
+{
+  "name": "sales-analytics-dashboard-clone",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "node scripts/build.mjs",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "pako": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "recharts": "^2.15.4",
+    "xlsx": "latest"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
+    "autoprefixer": "latest",
+    "esbuild": "^0.28.0",
+    "postcss": "latest",
+    "tailwindcss": "^3.4.17",
+    "vercel": "^50.8.0",
+    "vite": "^5.4.21"
+  }
+}
