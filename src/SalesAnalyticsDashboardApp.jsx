@@ -159,7 +159,7 @@ const tooltipItemStyle = {
 const KPI_GOALS = {
   nsli: 4000,
   closePct: 0.30,
-  demoPct: 0.87,
+  demoPct: 0.85,
   netPct: 0.80,
 };
 
