@@ -92,6 +92,7 @@ const DEFAULT_TEAM_ROSTERS = {
     "Colton Duarte",
     "Jon Potter",
     "Heather Lederman",
+    "Alex Montanye",
   ],
   EMASS: [
     "Dan O'Keefe",
@@ -105,6 +106,8 @@ const DEFAULT_TEAM_ROSTERS = {
     "Brett Tetreault",
     "Ron Parker",
     "Caleb Rivera",
+    "Melissa Tippitt",
+    "Collin Conley",
   ],
   CT: [
     "Steve Alkandros",
@@ -114,6 +117,7 @@ const DEFAULT_TEAM_ROSTERS = {
     "Jessica Maine",
     "Kansas Calloway",
     "Jaydeep Soni",
+    "Thomas Martin",
   ],
   Albany: [
     "Jeffrey Scherl",
