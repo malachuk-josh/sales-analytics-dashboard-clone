@@ -278,6 +278,16 @@ function toIsoDate(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
+function getMostRecentSunday() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - d.getDay());
+  return toIsoDate(d);
+}
+
+const DEFAULT_DATE_START = "2026-01-01";
+const DEFAULT_DATE_END = getMostRecentSunday();
+
 function formatDisplayDate(value) {
   if (!value) return "";
   const date = typeof value === "string" && value.includes("-") ? new Date(`${value}T00:00:00`) : parseUsDate(value);
@@ -1607,12 +1617,12 @@ export default function SalesAnalyticsDashboardApp() {
   const [groupRepSearch, setGroupRepSearch] = useState("");
   const [groupDraftMembers, setGroupDraftMembers] = useState([]);
   const [repSearch, setRepSearch] = useState("");
-  const [dateRange, setDateRange] = useState({ start: embeddedDemoBounds.minDate, end: embeddedDemoBounds.maxDate });
+  const [dateRange, setDateRange] = useState({ start: DEFAULT_DATE_START, end: DEFAULT_DATE_END });
   const [dashboardRangeEditorOpen, setDashboardRangeEditorOpen] = useState(false);
-  const [dashboardDraftRange, setDashboardDraftRange] = useState({ start: embeddedDemoBounds.minDate, end: embeddedDemoBounds.maxDate });
-  const [scorecardDateRange, setScorecardDateRange] = useState({ start: embeddedDemoBounds.minDate, end: embeddedDemoBounds.maxDate });
+  const [dashboardDraftRange, setDashboardDraftRange] = useState({ start: DEFAULT_DATE_START, end: DEFAULT_DATE_END });
+  const [scorecardDateRange, setScorecardDateRange] = useState({ start: DEFAULT_DATE_START, end: DEFAULT_DATE_END });
   const [scorecardRangeEditorOpen, setScorecardRangeEditorOpen] = useState(false);
-  const [scorecardDraftRange, setScorecardDraftRange] = useState({ start: embeddedDemoBounds.minDate, end: embeddedDemoBounds.maxDate });
+  const [scorecardDraftRange, setScorecardDraftRange] = useState({ start: DEFAULT_DATE_START, end: DEFAULT_DATE_END });
   const [projectorAdjustments, setProjectorAdjustments] = useState({
     demoPct: 0,
     closePct: 0,
@@ -1654,9 +1664,7 @@ export default function SalesAnalyticsDashboardApp() {
 
         if (!parsed || isCancelled) return;
 
-        const parsedMinDate = parsed.minDate || embeddedDemoBounds.minDate;
-        const parsedMaxDate = parsed.maxDate || embeddedDemoBounds.maxDate || toIsoDate(new Date());
-        const initialRange = { start: parsedMinDate, end: parsedMaxDate };
+        const initialRange = { start: DEFAULT_DATE_START, end: DEFAULT_DATE_END };
 
         setUploadMeta({ workbookName: DEFAULT_DATA_FILE_NAME, sheetNames: parsed.sheetNames || [] });
         setUploadData(parsed);
