@@ -184,8 +184,6 @@ const DEFAULT_ANNUAL_VOLUME_BANDS = {
   yellowMin: DEFAULT_GOAL_TARGETS.annualNetVolume * 0.9,
 };
 
-const DEFAULT_TIER_THRESHOLDS = { aMin: 0.30, bMin: 0.24 };
-
 const bonusTiers = [
   { min: 125000, max: 149999, rate: 0.01, label: "$125k+" },
   { min: 150000, max: 174999, rate: 0.015, label: "$150k+" },
@@ -1421,14 +1419,6 @@ function parseGoalEditorValue(rawValue, inputType = "currency") {
   return parseMoney(text);
 }
 
-function repTierLetter(rep) {
-  const closePct = safeNum(rep?.closePct);
-  const nsli = safeNum(rep?.nsli);
-  if (closePct >= 0.28 && nsli >= 4000) return "A";
-  if (closePct >= 0.22 && nsli >= 3200) return "B";
-  return "C";
-}
-
 function repHealthValue(rep) {
   const closeScore = clamp(safeNum(rep?.closePct) / KPI_GOALS.closePct, 0, 1.2);
   const netScore = clamp(safeNum(rep?.netPct) / KPI_GOALS.netPct, 0, 1.2);
@@ -1444,40 +1434,6 @@ function teamTheme(teamName) {
   if (key === "CT") return { header: "bg-sky-500/10 text-sky-300 border-sky-500/30", pill: "text-sky-300" };
   if (key === "Lobby") return { header: "bg-slate-500/10 text-slate-300 border-slate-500/30", pill: "text-slate-300" };
   return { header: "bg-violet-500/10 text-violet-300 border-violet-500/30", pill: "text-violet-300" };
-}
-
-const DEFAULT_MOVEMENT_CONFIG = {
-  AA: { multiplier: 1.15, guidance: "Prioritize" },
-  AB: { multiplier: 1.0, guidance: "Maintain" },
-  AC: { multiplier: 0.9, guidance: "Maintain" },
-  BA: { multiplier: 1.1, guidance: "Prioritize" },
-  BB: { multiplier: 0.85, guidance: "Maintain" },
-  BC: { multiplier: 0.75, guidance: "Cap / coach" },
-  CA: { multiplier: 0.9, guidance: "Maintain" },
-  CB: { multiplier: 0.85, guidance: "Maintain" },
-  CC: { multiplier: 0.7, guidance: "Cap / coach" },
-};
-
-function classifyCloseTier(closePct, thresholds) {
-  const value = safeNum(closePct);
-  if (value >= safeNum(thresholds?.aMin)) return "A";
-  if (value >= safeNum(thresholds?.bMin)) return "B";
-  return "C";
-}
-
-function movementBucketMeta(bucketId) {
-  const meta = {
-    AA: { title: "Stable Elite", summary: "AA - held A in 90D and 30D", tone: "border-emerald-500/50", titleTone: "text-emerald-400" },
-    AB: { title: "Stable", summary: "AB - A in 90D, slight dip to stable", tone: "border-emerald-500/40", titleTone: "text-emerald-400" },
-    AC: { title: "Early Softening", summary: "AC - A in 90D but slipping to C", tone: "border-amber-500/50", titleTone: "text-amber-400" },
-    BA: { title: "Breakout", summary: "BA - improved from B to A", tone: "border-sky-500/50", titleTone: "text-sky-400" },
-    BB: { title: "Mediocrity", summary: "BB - held B in both windows", tone: "border-slate-500/50", titleTone: "text-slate-300" },
-    BC: { title: "Downtrend Risk", summary: "BC - B in 90D, falling to C", tone: "border-rose-500/50", titleTone: "text-rose-400" },
-    CA: { title: "Short-Term Spike", summary: "CA - C in 90D but spikes A in 30D", tone: "border-violet-500/50", titleTone: "text-violet-300" },
-    CB: { title: "Early Recovery", summary: "CB - C in 90D, recovering to B", tone: "border-emerald-500/40", titleTone: "text-emerald-400" },
-    CC: { title: "Chronic Underperformance", summary: "CC - held C in both windows", tone: "border-rose-500/50", titleTone: "text-rose-400" },
-  };
-  return meta[bucketId] || meta.BB;
 }
 
 function StatCard({ title, value, subvalue, secondaryValue = "", secondaryRawValue = null, tertiaryValue = "", tertiaryClassName = "text-[var(--kpi-goal)]", icon: Icon, accent = "text-[var(--text-strong)]", rawValue = null, goalNote = "", goals = KPI_GOALS, bands = null }) {
@@ -1648,8 +1604,6 @@ export default function SalesAnalyticsDashboardApp() {
   const [goalTargets, setGoalTargets] = useState(DEFAULT_GOAL_TARGETS);
   const [kpiColorBands, setKpiColorBands] = useState(DEFAULT_KPI_COLOR_BANDS);
   const [annualVolumeBands, setAnnualVolumeBands] = useState(DEFAULT_ANNUAL_VOLUME_BANDS);
-  const [tierThresholds, setTierThresholds] = useState(DEFAULT_TIER_THRESHOLDS);
-  const [movementConfig, setMovementConfig] = useState(DEFAULT_MOVEMENT_CONFIG);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -2712,75 +2666,6 @@ export default function SalesAnalyticsDashboardApp() {
     ];
   }, [dashboardMetrics, goalTargets]);
 
-  const tierAnchorEnd = dateRange.end || datasetMaxDate;
-  const tier90Range = useMemo(() => buildLookbackRange(90, tierAnchorEnd, datasetMinDate, datasetMaxDate), [tierAnchorEnd, datasetMinDate, datasetMaxDate]);
-  const tier30Range = useMemo(() => buildLookbackRange(30, tierAnchorEnd, datasetMinDate, datasetMaxDate), [tierAnchorEnd, datasetMinDate, datasetMaxDate]);
-
-  const tier90Dataset = useMemo(() => {
-    if (uploadData && uploadData.rawEntries && uploadData.rawEntries.length) {
-      return aggregateRawEntriesToDataset(uploadData.rawEntries, tier90Range.start, tier90Range.end);
-    }
-    const baseWeeklyDataset = uploadData?.timeframeSets?.["90"] || (uploadData?.weekLabels?.length ? uploadData : { reps: demoReps, weekLabels: demoWeeks, minDate: embeddedDemoBounds.minDate, maxDate: embeddedDemoBounds.maxDate });
-    return buildDateRangedDatasetFromWeekly(baseWeeklyDataset, tier90Range.start, tier90Range.end);
-  }, [uploadData, tier90Range]);
-
-  const tier30Dataset = useMemo(() => {
-    if (uploadData && uploadData.rawEntries && uploadData.rawEntries.length) {
-      return aggregateRawEntriesToDataset(uploadData.rawEntries, tier30Range.start, tier30Range.end);
-    }
-    const baseWeeklyDataset = uploadData?.timeframeSets?.["90"] || (uploadData?.weekLabels?.length ? uploadData : { reps: demoReps, weekLabels: demoWeeks, minDate: embeddedDemoBounds.minDate, maxDate: embeddedDemoBounds.maxDate });
-    return buildDateRangedDatasetFromWeekly(baseWeeklyDataset, tier30Range.start, tier30Range.end);
-  }, [uploadData, tier30Range]);
-
-  const tier90Reps = useMemo(() => dedupeAndNormalizeReps(buildMergedData(tier90Dataset), tier90Dataset?.weekLabels?.length || 16), [tier90Dataset]);
-  const tier30Reps = useMemo(() => dedupeAndNormalizeReps(buildMergedData(tier30Dataset), tier30Dataset?.weekLabels?.length || 16), [tier30Dataset]);
-
-  const tierManagementData = useMemo(() => {
-    const allNames = Array.from(new Set([
-      ...tier90Reps.map((rep) => canonicalName(rep.rep)),
-      ...tier30Reps.map((rep) => canonicalName(rep.rep)),
-      ...reps.map((rep) => canonicalName(rep.rep)),
-    ].filter(Boolean)));
-
-    const by90 = Object.fromEntries(tier90Reps.map((rep) => [canonicalName(rep.rep), rep]));
-    const by30 = Object.fromEntries(tier30Reps.map((rep) => [canonicalName(rep.rep), rep]));
-    const byCurrent = Object.fromEntries(reps.map((rep) => [canonicalName(rep.rep), rep]));
-
-    const combinedReps = allNames.map((name) => {
-      const rep90 = by90[name];
-      const rep30 = by30[name];
-      const currentRep = byCurrent[name] || rep30 || rep90;
-      const ninetyTier = classifyCloseTier(rep90?.closePct ?? currentRep?.closePct, tierThresholds);
-      const thirtyTier = classifyCloseTier(rep30?.closePct ?? currentRep?.closePct, tierThresholds);
-      return {
-        rep: currentRep?.rep || name,
-        team: currentRep?.team || rep30?.team || rep90?.team || "Unknown",
-        tier90: ninetyTier,
-        tier30: thirtyTier,
-        bucketId: `${ninetyTier}${thirtyTier}`,
-        netVolume: safeNum(currentRep?.netVolume),
-      };
-    });
-
-    const distribution = {
-      A: combinedReps.filter((rep) => rep.tier30 === "A").length,
-      B: combinedReps.filter((rep) => rep.tier30 === "B").length,
-      C: combinedReps.filter((rep) => rep.tier30 === "C").length,
-      total: combinedReps.length,
-    };
-
-    const bucketOrder = ["AA", "AB", "AC", "BA", "BB", "BC", "CA", "CB", "CC"];
-    const buckets = bucketOrder.map((bucketId) => ({
-      bucketId,
-      members: combinedReps.filter((rep) => rep.bucketId === bucketId),
-      count: combinedReps.filter((rep) => rep.bucketId === bucketId).length,
-      ...movementBucketMeta(bucketId),
-      config: movementConfig[bucketId] || DEFAULT_MOVEMENT_CONFIG[bucketId],
-    }));
-
-    return { combinedReps, distribution, buckets };
-  }, [tier90Reps, tier30Reps, reps, tierThresholds, movementConfig]);
-
   const studioAnalyticsContext = useMemo(() => {
     const sortedByVolume = [...windowFilteredReps].sort((a, b) => safeNum(b.netVolume) - safeNum(a.netVolume));
     const focusRep = selectedRepRecord || sortedByVolume[0] || null;
@@ -3071,14 +2956,6 @@ export default function SalesAnalyticsDashboardApp() {
                     >
                       <span>Goal Management</span>
                       <span className="text-[10px] uppercase tracking-[0.18em]">Targets</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveWorkspace("tierManagement")}
-                      className={`flex w-full items-center justify-between rounded-xl border px-3 py-2 text-left text-sm font-semibold ${activeWorkspace === "tierManagement" ? "border-[var(--toggle-active-border)] bg-[var(--toggle-active-bg)] text-[var(--toggle-active-text)]" : "border-[var(--border)] bg-[var(--panel-bg)] text-[var(--text-soft)] hover:bg-[var(--button-hover)]"}`}
-                    >
-                      <span>Tier Management</span>
-                      <span className="text-[10px] uppercase tracking-[0.18em]">Movement</span>
                     </button>
                     <button
                       type="button"
@@ -4387,134 +4264,6 @@ export default function SalesAnalyticsDashboardApp() {
             </div>
           </div>
 
-          <div className={activeDepartment === "Sales Department" && activeWorkspace === "tierManagement" ? "block" : "hidden"}>
-            <div className="sticky top-0 z-30 -mx-4 px-4 pb-1.5 backdrop-blur lg:-mx-6 lg:px-6" style={{ backgroundColor: "var(--header-bg)" }}>
-              <div className="flex flex-col gap-2 xl:flex-row xl:items-start xl:justify-between">
-                <div>
-                  <h1 className="text-lg font-semibold tracking-[-0.01em] text-[var(--text-strong)]" style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif" }}>Tier Management</h1>
-                  <p className="text-[11px] text-[#9ba8bb]">Close % thresholds determine A, B, or C classification. Changes propagate live across the movement view.</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setTierThresholds(DEFAULT_TIER_THRESHOLDS);
-                      setMovementConfig(DEFAULT_MOVEMENT_CONFIG);
-                    }}
-                    className="border-[var(--border)] bg-[var(--panel-bg)] text-[var(--text-soft)] hover:bg-[var(--button-hover)]"
-                  >
-                    Reset
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 space-y-5">
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                {[
-                  { key: "A", title: "A", subtitle: "Elite performers", threshold: tierThresholds.aMin, count: tierManagementData.distribution.A, tone: "border-emerald-500/50", textTone: "text-emerald-400", editable: true },
-                  { key: "B", title: "B", subtitle: "Core performers", threshold: tierThresholds.bMin, count: tierManagementData.distribution.B, tone: "border-amber-500/50", textTone: "text-amber-400", editable: true },
-                  { key: "C", title: "C", subtitle: "Needs development", threshold: tierThresholds.bMin, count: tierManagementData.distribution.C, tone: "border-rose-500/50", textTone: "text-rose-400", editable: false },
-                ].map((card) => (
-                  <Card key={card.key} className={`border bg-[var(--card-bg)] ${card.tone}`}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className={`inline-flex h-7 min-w-[28px] items-center justify-center rounded-md border px-2 text-sm font-bold ${card.tone} ${card.textTone}`}>{card.title}</div>
-                          <div className="mt-2 text-sm text-[var(--kpi-title)]">{card.subtitle}</div>
-                        </div>
-                        <div className="text-xs text-[var(--kpi-title)]">{card.count} reps</div>
-                      </div>
-                      <div className="mt-5 flex items-center gap-2">
-                        {card.editable ? (
-                          <>
-                            <Button type="button" variant="outline" className="h-8 w-8 border-[var(--border)] bg-[var(--panel-bg)] px-0 text-[var(--text-strong)]" onClick={() => setTierThresholds((current) => card.key === "A" ? { ...current, aMin: Math.max(current.bMin + 0.01, Math.round((current.aMin - 0.01) * 100) / 100) } : { ...current, bMin: Math.max(0.1, Math.min(current.aMin - 0.01, Math.round((current.bMin - 0.01) * 100) / 100)) })}>−</Button>
-                            <div className="min-w-[88px] rounded-xl border border-[var(--border)] bg-[var(--panel-bg)] px-3 py-2 text-center font-semibold text-[var(--text-strong)]">{pct(card.threshold, 0)}</div>
-                            <Button type="button" variant="outline" className="h-8 w-8 border-[var(--border)] bg-[var(--panel-bg)] px-0 text-[var(--text-strong)]" onClick={() => setTierThresholds((current) => card.key === "A" ? { ...current, aMin: Math.min(0.6, Math.round((current.aMin + 0.01) * 100) / 100) } : { ...current, bMin: Math.min(current.aMin - 0.01, Math.round((current.bMin + 0.01) * 100) / 100) })}>+</Button>
-                          </>
-                        ) : (
-                          <div className="text-2xl font-semibold text-[var(--text-strong)]">{`< ${pct(tierThresholds.bMin, 0)}`}</div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3 text-sm">
-                <span className="text-[var(--kpi-title)]">Live dist.</span>
-                {[
-                  { key: "A", count: tierManagementData.distribution.A, text: "text-emerald-400" },
-                  { key: "B", count: tierManagementData.distribution.B, text: "text-amber-400" },
-                  { key: "C", count: tierManagementData.distribution.C, text: "text-rose-400" },
-                ].map((item) => (
-                  <div key={item.key} className="flex items-center gap-2">
-                    <div className={`h-4 w-[92px] rounded-sm ${item.key === "A" ? "bg-emerald-500" : item.key === "B" ? "bg-amber-500" : "bg-rose-500"}`} />
-                    <span className={`font-semibold ${item.text}`}>{item.key}: {item.count} ({tierManagementData.distribution.total ? Math.round((item.count / tierManagementData.distribution.total) * 100) : 0}%)</span>
-                  </div>
-                ))}
-              </div>
-
-              <div>
-                <div className="text-xl font-semibold text-[var(--text-strong)]">Movement Matrix</div>
-                <div className="mt-1 text-sm text-[var(--kpi-title)]">90D tier baseline vs 30D tier current. Adjust lead multiplier and guidance per bucket.</div>
-              </div>
-
-              <div className="space-y-3">
-                {[0, 1, 2].map((rowIndex) => {
-                  const rowBuckets = tierManagementData.buckets.slice(rowIndex * 3, rowIndex * 3 + 3);
-                  return (
-                    <div key={`row-${rowIndex}`} className="space-y-3">
-                      <div className="grid grid-cols-3 gap-3 rounded-xl border border-[var(--border)] bg-[var(--panel-bg)] px-4 py-2 text-center text-sm text-[var(--kpi-title)]">
-                        {rowBuckets.map((bucket) => (
-                          <div key={`${bucket.bucketId}-header`}>{`90D:${bucket.bucketId[0]} / 30D:${bucket.bucketId[1]}`}</div>
-                        ))}
-                      </div>
-                      <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
-                        {rowBuckets.map((bucket) => (
-                          <Card key={bucket.bucketId} className={`border bg-[var(--card-bg)] ${bucket.tone}`}>
-                            <CardContent className="p-4">
-                              <div className={`text-lg font-semibold ${bucket.titleTone}`}>{bucket.title}</div>
-                              <div className="mt-1 text-xs text-[var(--kpi-title)]">{bucket.summary} | {bucket.count} reps</div>
-                              <div className="mt-4 grid grid-cols-2 gap-4">
-                                <div>
-                                  <div className="text-[10px] uppercase tracking-[0.18em] text-[var(--kpi-title)]">Lead Mult</div>
-                                  <div className="mt-2 flex items-center gap-2">
-                                    <Button type="button" variant="outline" className="h-8 w-8 border-[var(--border)] bg-[var(--panel-bg)] px-0 text-[var(--text-strong)]" onClick={() => setMovementConfig((current) => ({ ...current, [bucket.bucketId]: { ...current[bucket.bucketId], multiplier: Math.max(0.5, Math.round((safeNum(current[bucket.bucketId]?.multiplier) - 0.05) * 100) / 100) } }))}>−</Button>
-                                    <div className="min-w-[76px] rounded-lg border border-[var(--border)] bg-[var(--panel-bg)] px-3 py-2 text-center font-semibold text-[var(--text-strong)]">{safeNum(bucket.config.multiplier).toFixed(2)}x</div>
-                                    <Button type="button" variant="outline" className="h-8 w-8 border-[var(--border)] bg-[var(--panel-bg)] px-0 text-[var(--text-strong)]" onClick={() => setMovementConfig((current) => ({ ...current, [bucket.bucketId]: { ...current[bucket.bucketId], multiplier: Math.min(1.5, Math.round((safeNum(current[bucket.bucketId]?.multiplier) + 0.05) * 100) / 100) } }))}>+</Button>
-                                  </div>
-                                </div>
-                                <div>
-                                  <div className="text-[10px] uppercase tracking-[0.18em] text-[var(--kpi-title)]">Guidance</div>
-                                  <Select value={bucket.config.guidance} onValueChange={(value) => setMovementConfig((current) => ({ ...current, [bucket.bucketId]: { ...current[bucket.bucketId], guidance: value } }))}>
-                                    <SelectTrigger className="mt-2 h-10 border-[var(--border)] bg-[var(--panel-bg)] text-sm text-[var(--text-strong)]">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {[
-                                        "Prioritize",
-                                        "Maintain",
-                                        "Cap / coach",
-                                      ].map((option) => (
-                                        <SelectItem key={`${bucket.bucketId}-${option}`} value={option}>{option}</SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
           <div className={activeDepartment === "Sales Department" && activeWorkspace === "teamManagement" ? "block" : "hidden"}>
             <div className="sticky top-0 z-30 -mx-4 px-4 pb-1.5 backdrop-blur lg:-mx-6 lg:px-6" style={{ backgroundColor: "var(--header-bg)" }}>
               <div className="flex flex-col gap-2 xl:flex-row xl:items-start xl:justify-between">
@@ -4543,7 +4292,6 @@ export default function SalesAnalyticsDashboardApp() {
                   <CardContent className="p-3">
                     <div className="space-y-3">
                       {team.reps.length ? team.reps.map((rep) => {
-                        const tier = repTierLetter(rep);
                         const health = repHealthValue(rep);
                         return (
                           <div key={`${team.name}-${rep.rep}`} className="rounded-xl border border-[var(--border)] bg-[var(--panel-bg)] p-3">
@@ -4553,7 +4301,6 @@ export default function SalesAnalyticsDashboardApp() {
                                 <div className="mt-1 text-xs text-[var(--kpi-title)]">{rep.movement}</div>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className={`inline-flex h-7 w-7 items-center justify-center rounded-md border text-xs font-bold ${tier === "A" ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300" : tier === "B" ? "border-amber-500/40 bg-amber-500/10 text-amber-300" : "border-rose-500/40 bg-rose-500/10 text-rose-300"}`}>{tier}</span>
                                 <span className={`text-sm font-semibold ${health >= 0.75 ? "text-emerald-300" : health >= 0.6 ? "text-amber-300" : "text-rose-300"}`}>{health.toFixed(2)}</span>
                               </div>
                             </div>
