@@ -1651,7 +1651,7 @@ export default function SalesAnalyticsDashboardApp() {
   const [tierThresholds, setTierThresholds] = useState(DEFAULT_TIER_THRESHOLDS);
   const [movementConfig, setMovementConfig] = useState(DEFAULT_MOVEMENT_CONFIG);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   const [commissionRate, setCommissionRate] = useState(0.1);
 
