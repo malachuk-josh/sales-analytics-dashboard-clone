@@ -3210,7 +3210,7 @@ export default function SalesAnalyticsDashboardApp() {
                   tertiaryValue={volumeMetric === "net" ? `Annual pace ${currency(stickyYtdPace.annualized)}` : ""}
                   tertiaryClassName="text-[var(--kpi-goal)]"
                   icon={DollarSign}
-                  accent={volumeMetric === "gross" ? "text-[var(--text-strong)]" : "text-[var(--kpi-volume-primary)]"}
+                  accent="text-[var(--text-strong)]"
                   rawValue={null}
                 />
                 <StatCard title="Close %" value={pct(stickyHeaderMetrics.ytd.closePct, 0)} subvalue="YTD" secondaryValue={`MTD ${pct(stickyHeaderMetrics.mtd.closePct, 0)}`}
@@ -3441,7 +3441,7 @@ export default function SalesAnalyticsDashboardApp() {
                       </div>
                       <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-bg)]/50 p-4">
                         <div className="text-xs uppercase tracking-[0.2em] text-[var(--kpi-title)]">{volumeMetric === "gross" ? "Gross Volume" : "Net Volume"}</div>
-                        <div className={`mt-2 text-xl font-semibold ${volumeMetric === "gross" ? "text-[var(--text-strong)]" : "text-[var(--kpi-good)]"}`}>{currency(volumeMetric === "gross" ? performanceScorecard.grossVolume : performanceScorecard.netVolume)}</div>
+                        <div className="mt-2 text-xl font-semibold text-[var(--text-strong)]">{currency(volumeMetric === "gross" ? performanceScorecard.grossVolume : performanceScorecard.netVolume)}</div>
                       </div>
                       <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-bg)]/50 p-4">
                         <div className="text-xs uppercase tracking-[0.2em] text-[var(--kpi-title)]">Demo %</div>
