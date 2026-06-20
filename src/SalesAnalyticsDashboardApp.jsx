@@ -3091,73 +3091,62 @@ export default function SalesAnalyticsDashboardApp() {
           <div className={activeDepartment === "Sales Department" && activeWorkspace === "reviewStudio" ? "block" : "hidden"}>
             <div className={`sticky top-0 z-30 -mx-4 px-4 backdrop-blur lg:-mx-6 lg:px-6 ${isDashboardHeaderCollapsed ? "pb-1" : "pb-1.5"}`} style={{ backgroundColor: "var(--header-bg)" }}>
               <div className="flex flex-col gap-1.5 xl:flex-row xl:items-start xl:justify-between">
-                <div className="flex items-start gap-3">
-                  <div>
-                    <h1 className="text-lg font-semibold tracking-[-0.01em] text-[var(--text-strong)]" style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif" }}>Overwatch Analytics</h1>
-                    {!isDashboardHeaderCollapsed ? (
-                      <p className="text-[11px] text-[#9ba8bb]">Interactive KPI review, coaching recommendations, projections, and live insights across any imported date range.</p>
-                    ) : null}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsDashboardHeaderCollapsed((current) => !current);
-                      setDashboardRangeEditorOpen(false);
-                    }}
-                    className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--panel-bg)] px-3 text-[13px] font-semibold text-[var(--text-soft)] hover:bg-[var(--button-hover)]"
-                    aria-expanded={!isDashboardHeaderCollapsed}
-                    aria-label={isDashboardHeaderCollapsed ? "Expand dashboard header" : "Collapse dashboard header"}
-                  >
-                    {isDashboardHeaderCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-                    <span>{isDashboardHeaderCollapsed ? "Expand" : "Collapse"}</span>
-                  </button>
+                <div>
+                  <h1 className="text-lg font-semibold tracking-[-0.01em] text-[var(--text-strong)]" style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif" }}>Overwatch Analytics</h1>
+                  {!isDashboardHeaderCollapsed ? (
+                    <p className="text-[11px] text-[#9ba8bb]">Interactive KPI review, coaching recommendations, projections, and live insights across any imported date range.</p>
+                  ) : null}
                 </div>
-                {!isDashboardHeaderCollapsed ? (
-                  <div className="flex w-full max-w-[520px] flex-col items-stretch gap-1 xl:items-end">
-                    <div className="flex flex-wrap items-center justify-end gap-2">
-                      <a
-                        href="https://improveit360-9618.my.salesforce.com/00OPf000007Ws9J"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center justify-center px-4 text-[13px] font-semibold transition hover:bg-white"
-                        style={actionPillStyle}
-                      >
-                        Data Source
-                      </a>
-                      <label
-                        className="inline-flex cursor-pointer items-center justify-center gap-2 px-4 text-[13px] font-semibold transition hover:bg-white"
-                        style={actionPillStyle}
-                      >
-                        <UploadIcon className="h-4 w-4" />
-                        <span>Upload New File</span>
-                        <input type="file" accept=".xlsx,.xls" className="hidden" onChange={onUpload} />
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (typeof document !== "undefined") {
-                            document.getElementById("period-kpi-scorecard")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                          }
-                        }}
-                        className="inline-flex items-center justify-center gap-2 px-4 text-[13px] font-semibold transition hover:bg-white"
-                        style={actionPillStyle}
-                      >
-                        <InfoIcon className="h-4 w-4" />
-                        <span>KPI Info</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setIsDarkMode((current) => !current)}
-                        className="inline-flex items-center justify-center gap-2 px-4 text-[13px] font-semibold transition hover:bg-white"
-                        style={actionPillStyle}
-                      >
-                        <DarkModeIcon className="h-4 w-4" />
-                        <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
-                      </button>
-                    </div>
-                    <div className="text-right text-[10px] text-[var(--kpi-title)]">Loaded: {uploadMeta.workbookName}</div>
+                <div className="flex w-full max-w-[520px] flex-col items-stretch gap-1 xl:items-end">
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    {!isDashboardHeaderCollapsed ? (
+                      <>
+                        <a
+                          href="https://improveit360-9618.my.salesforce.com/00OPf000007Ws9J"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center justify-center px-4 text-[13px] font-semibold transition hover:bg-white"
+                          style={actionPillStyle}
+                        >
+                          Data Source
+                        </a>
+                        <label
+                          className="inline-flex cursor-pointer items-center justify-center gap-2 px-4 text-[13px] font-semibold transition hover:bg-white"
+                          style={actionPillStyle}
+                        >
+                          <UploadIcon className="h-4 w-4" />
+                          <span>Upload New File</span>
+                          <input type="file" accept=".xlsx,.xls" className="hidden" onChange={onUpload} />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setIsDarkMode((current) => !current)}
+                          className="inline-flex items-center justify-center gap-2 px-4 text-[13px] font-semibold transition hover:bg-white"
+                          style={actionPillStyle}
+                        >
+                          <DarkModeIcon className="h-4 w-4" />
+                          <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
+                        </button>
+                      </>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsDashboardHeaderCollapsed((current) => !current);
+                        setDashboardRangeEditorOpen(false);
+                      }}
+                      className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--panel-bg)] px-3 text-[13px] font-semibold text-[var(--text-soft)] hover:bg-[var(--button-hover)]"
+                      aria-expanded={!isDashboardHeaderCollapsed}
+                      aria-label={isDashboardHeaderCollapsed ? "Expand dashboard header" : "Collapse dashboard header"}
+                    >
+                      {isDashboardHeaderCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+                      <span>{isDashboardHeaderCollapsed ? "Expand" : "Collapse"}</span>
+                    </button>
                   </div>
-                ) : null}
+                  {!isDashboardHeaderCollapsed ? (
+                    <div className="text-right text-[10px] text-[var(--kpi-title)]">Loaded: {uploadMeta.workbookName}</div>
+                  ) : null}
+                </div>
               </div>
 
               {!isDashboardHeaderCollapsed ? (
