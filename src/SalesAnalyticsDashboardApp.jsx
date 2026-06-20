@@ -3376,7 +3376,7 @@ export default function SalesAnalyticsDashboardApp() {
                               <text
                                 x={safeNum(x) + safeNum(width) / 2}
                                 y={safeNum(y) - 8}
-                                fill="#475569"
+                                fill="#64748b"
                                 fontSize={12}
                                 fontWeight="700"
                                 textAnchor="middle"
