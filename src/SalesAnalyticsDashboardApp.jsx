@@ -1445,7 +1445,7 @@ function teamTheme(teamName) {
   return { header: "bg-violet-500/10 text-violet-300 border-violet-500/30", pill: "text-violet-300" };
 }
 
-function StatCard({ title, value, subvalue, secondaryValue = "", secondaryRawValue = null, tertiaryValue = "", tertiaryClassName = "text-[var(--kpi-goal)]", icon: Icon, accent = "text-[var(--text-strong)]", rawValue = null, goalNote = "", goals = KPI_GOALS, bands = null }) {
+function StatCard({ title, value, subvalue, secondaryValue = "", secondaryRawValue = null, secondaryAccent = null, tertiaryValue = "", tertiaryClassName = "text-[var(--kpi-goal)]", icon: Icon, accent = "text-[var(--text-strong)]", rawValue = null, goalNote = "", goals = KPI_GOALS, bands = null }) {
   const primaryLabel = subvalue || "";
   const secondaryLabel = secondaryValue ? secondaryValue.split(" ")[0] : "";
   const secondaryMetricValue = secondaryValue ? secondaryValue.slice(secondaryLabel.length).trim() : "";
@@ -1467,7 +1467,7 @@ function StatCard({ title, value, subvalue, secondaryValue = "", secondaryRawVal
             </div>
               {secondaryValue ? (
                 <div
-                  className={`mt-[16px] font-bold leading-snug ${metricAccentClass(title, secondaryRawValue, "text-[var(--kpi-title)]", goals, bands)}`}
+                  className={`mt-[16px] font-bold leading-snug ${secondaryAccent || metricAccentClass(title, secondaryRawValue, "text-[var(--kpi-title)]", goals, bands)}`}
                   style={{ fontSize: "23px", lineHeight: 1.15 }}
                 >
                   {secondaryLabel ? <span style={{ fontSize: "16px" }}>{`${secondaryLabel}:`}</span> : null}
@@ -2048,6 +2048,17 @@ export default function SalesAnalyticsDashboardApp() {
     const annualized = safeNum(stickyHeaderMetrics.ytd.netVolume) * (365 / elapsedDays);
     return {
       annualized,
+      toneClass: annualized >= annualVolumeBands.greenMin ? "text-[var(--kpi-good)]" : annualized >= annualVolumeBands.yellowMin ? "text-[var(--kpi-warn)]" : "text-[var(--kpi-bad)]",
+    };
+  }, [stickyHeaderMetrics, datasetMaxDate, annualVolumeBands]);
+
+  const stickyMtdPace = useMemo(() => {
+    const anchorIso = stickyHeaderMetrics.anchorIso || datasetMaxDate || toIsoDate(new Date());
+    const anchorDate = new Date(`${anchorIso}T00:00:00`);
+    const monthStart = new Date(anchorDate.getFullYear(), anchorDate.getMonth(), 1);
+    const elapsedDays = Math.max(1, Math.floor((anchorDate.getTime() - monthStart.getTime()) / 86400000) + 1);
+    const annualized = safeNum(stickyHeaderMetrics.mtd.netVolume) * (365 / elapsedDays);
+    return {
       toneClass: annualized >= annualVolumeBands.greenMin ? "text-[var(--kpi-good)]" : annualized >= annualVolumeBands.yellowMin ? "text-[var(--kpi-warn)]" : "text-[var(--kpi-bad)]",
     };
   }, [stickyHeaderMetrics, datasetMaxDate, annualVolumeBands]);
@@ -3252,6 +3263,7 @@ export default function SalesAnalyticsDashboardApp() {
                   subvalue="YTD"
                   secondaryValue={`MTD ${currency(volumeMetric === "gross" ? stickyHeaderMetrics.mtd.grossVolume : stickyHeaderMetrics.mtd.netVolume)}`}
                   secondaryRawValue={null}
+                  secondaryAccent={volumeMetric === "net" ? stickyMtdPace.toneClass : null}
                   tertiaryValue={volumeMetric === "net" ? `Annual pace ${currency(stickyYtdPace.annualized)}` : ""}
                   tertiaryClassName={volumeMetric === "net" ? stickyYtdPace.toneClass : "text-[var(--kpi-goal)]"}
                   icon={DollarSign}
@@ -3489,7 +3501,7 @@ export default function SalesAnalyticsDashboardApp() {
                       </div>
                       <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-bg)]/50 p-4">
                         <div className="text-xs uppercase tracking-[0.2em] text-[var(--kpi-title)]">{volumeMetric === "gross" ? "Gross Volume" : "Net Volume"}</div>
-                        <div className="mt-2 text-xl font-semibold text-[var(--text-strong)]">{currency(volumeMetric === "gross" ? performanceScorecard.grossVolume : performanceScorecard.netVolume)}</div>
+                        <div className={`mt-2 text-xl font-semibold ${volumeMetric === "net" ? (annualizedNetVolume >= annualVolumeBands.greenMin ? "text-[var(--kpi-good)]" : annualizedNetVolume >= annualVolumeBands.yellowMin ? "text-[var(--kpi-warn)]" : "text-[var(--kpi-bad)]") : "text-[var(--text-strong)]"}`}>{currency(volumeMetric === "gross" ? performanceScorecard.grossVolume : performanceScorecard.netVolume)}</div>
                       </div>
                       <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-bg)]/50 p-4">
                         <div className="text-xs uppercase tracking-[0.2em] text-[var(--kpi-title)]">Demo %</div>
