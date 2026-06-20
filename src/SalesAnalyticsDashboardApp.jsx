@@ -193,6 +193,8 @@ const DEFAULT_ANNUAL_VOLUME_BANDS = {
   yellowMin: DEFAULT_GOAL_TARGETS.annualNetVolume * 0.9,
 };
 
+const TEAM_DEFAULT_ANNUAL_NET_VOLUME = { WMASS: 12000000, EMASS: 12000000, Albany: 8000000, CT: 8000000, Exterior: 2000000 };
+
 const bonusTiers = [
   { min: 125000, max: 149999, rate: 0.01, label: "$125k+" },
   { min: 150000, max: 174999, rate: 0.015, label: "$150k+" },
@@ -1617,7 +1619,7 @@ export default function SalesAnalyticsDashboardApp() {
   const [teamGoalOverrides, setTeamGoalOverrides] = useState(() =>
     Object.fromEntries(PRELOADED_GROUP_NAMES.map((name) => [
       name,
-      { enabled: false, closePct: DEFAULT_GOAL_TARGETS.closePct, netPct: DEFAULT_GOAL_TARGETS.netPct, nsli: DEFAULT_GOAL_TARGETS.nsli, demoPct: DEFAULT_GOAL_TARGETS.demoPct, avgTicket: DEFAULT_GOAL_TARGETS.avgTicket, annualNetVolume: DEFAULT_GOAL_TARGETS.annualNetVolume },
+      { enabled: false, closePct: DEFAULT_GOAL_TARGETS.closePct, netPct: DEFAULT_GOAL_TARGETS.netPct, nsli: DEFAULT_GOAL_TARGETS.nsli, demoPct: DEFAULT_GOAL_TARGETS.demoPct, avgTicket: DEFAULT_GOAL_TARGETS.avgTicket, annualNetVolume: TEAM_DEFAULT_ANNUAL_NET_VOLUME[name] ?? DEFAULT_GOAL_TARGETS.annualNetVolume },
     ]))
   );
   const [isDarkMode, setIsDarkMode] = useState(false);
