@@ -4029,6 +4029,33 @@ export default function SalesAnalyticsDashboardApp() {
                   <span className="text-xs uppercase tracking-[0.2em] text-[var(--kpi-title)]">vs current actuals</span>
                 </div>
               </div>
+
+              <div className="mt-2 flex flex-wrap gap-2">
+                {["All", ...PRELOADED_GROUP_NAMES, "Individual"].map((tab) => {
+                  const isSelected = goalManagementTab === tab;
+                  const isActiveFilter =
+                    tab === "All" ? selectedGroup === "All Groups" && selectedRep === "All Reps"
+                    : tab === "Individual" ? selectedRep !== "All Reps"
+                    : selectedGroup === tab;
+                  return (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setGoalManagementTab(tab)}
+                      className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-[13px] font-semibold transition-colors ${
+                        isSelected
+                          ? "border-[var(--toggle-active-border)] bg-[var(--toggle-active-bg)] text-[var(--toggle-active-text)]"
+                          : "border-[var(--border)] bg-[var(--button-bg)] text-[#a9b4c5] hover:bg-[var(--button-hover)]"
+                      }`}
+                    >
+                      {tab}
+                      {isActiveFilter && (
+                        <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? "bg-[var(--toggle-active-text)]/40" : "bg-[var(--toggle-active-bg)]"}`} />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {dashboardRangeEditorOpen ? (
@@ -4346,34 +4373,6 @@ export default function SalesAnalyticsDashboardApp() {
 
               <Card className="mt-4 border-[var(--border-strong)] bg-[var(--card-bg)]">
                 <CardContent className="p-4">
-                  {/* Tab bar */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {["All", ...PRELOADED_GROUP_NAMES, "Individual"].map((tab) => {
-                      const isSelected = goalManagementTab === tab;
-                      const isActiveFilter =
-                        tab === "All" ? selectedGroup === "All Groups" && selectedRep === "All Reps"
-                        : tab === "Individual" ? selectedRep !== "All Reps"
-                        : selectedGroup === tab;
-                      return (
-                        <button
-                          key={tab}
-                          type="button"
-                          onClick={() => setGoalManagementTab(tab)}
-                          className={`relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-                            isSelected
-                              ? "bg-lime-600 text-slate-950"
-                              : "border border-[var(--border)] bg-[var(--panel-bg)] text-[var(--text-soft)] hover:bg-[var(--button-hover)]"
-                          }`}
-                        >
-                          {tab}
-                          {isActiveFilter && (
-                            <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? "bg-slate-950/40" : "bg-lime-400"}`} />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-
                   {/* All — global defaults */}
                   {goalManagementTab === "All" && (
                     <p className="text-sm text-[var(--kpi-title)]">Global defaults are configured in the sections above. Net volume goal: {currency(goalTargets.annualNetVolume)}.</p>
