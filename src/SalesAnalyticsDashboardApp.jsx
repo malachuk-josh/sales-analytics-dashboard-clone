@@ -2044,7 +2044,7 @@ export default function SalesAnalyticsDashboardApp() {
 
   const effectiveVolumeBands = useMemo(() => {
     const override = teamGoalOverrides[selectedGroup];
-    if (override?.enabled && safeNum(override.annualNetVolume) > 0) {
+    if (override && safeNum(override.annualNetVolume) > 0) {
       const greenMin = safeNum(override.annualNetVolume);
       return { greenMin, yellowMin: greenMin * 0.9 };
     }
@@ -2650,6 +2650,9 @@ export default function SalesAnalyticsDashboardApp() {
     const override = teamGoalOverrides[selectedGroup];
     if (override?.enabled) {
       return { ...goalTargets, closePct: override.closePct, netPct: override.netPct, nsli: override.nsli, demoPct: override.demoPct, avgTicket: override.avgTicket, annualNetVolume: override.annualNetVolume };
+    }
+    if (override && safeNum(override.annualNetVolume) > 0) {
+      return { ...goalTargets, annualNetVolume: safeNum(override.annualNetVolume) };
     }
     return goalTargets;
   }, [goalTargets, teamGoalOverrides, selectedGroup]);
