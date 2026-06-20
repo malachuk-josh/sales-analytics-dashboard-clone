@@ -2042,6 +2042,15 @@ export default function SalesAnalyticsDashboardApp() {
     };
   }, [uploadData, datasetMaxDate, dashboardMetrics, selectedGroup, selectedGroupMembers, selectedRep, selectedProduct]);
 
+  const effectiveVolumeBands = useMemo(() => {
+    const override = teamGoalOverrides[selectedGroup];
+    if (override?.enabled && safeNum(override.annualNetVolume) > 0) {
+      const greenMin = safeNum(override.annualNetVolume);
+      return { greenMin, yellowMin: greenMin * 0.9 };
+    }
+    return annualVolumeBands;
+  }, [teamGoalOverrides, selectedGroup, annualVolumeBands]);
+
   const stickyYtdPace = useMemo(() => {
     const anchorIso = stickyHeaderMetrics.anchorIso || datasetMaxDate || toIsoDate(new Date());
     const anchorDate = new Date(`${anchorIso}T00:00:00`);
@@ -2050,9 +2059,9 @@ export default function SalesAnalyticsDashboardApp() {
     const annualized = safeNum(stickyHeaderMetrics.ytd.netVolume) * (365 / elapsedDays);
     return {
       annualized,
-      toneClass: annualized >= annualVolumeBands.greenMin ? "text-[var(--kpi-good)]" : annualized >= annualVolumeBands.yellowMin ? "text-[var(--kpi-warn)]" : "text-[var(--kpi-bad)]",
+      toneClass: annualized >= effectiveVolumeBands.greenMin ? "text-[var(--kpi-good)]" : annualized >= effectiveVolumeBands.yellowMin ? "text-[var(--kpi-warn)]" : "text-[var(--kpi-bad)]",
     };
-  }, [stickyHeaderMetrics, datasetMaxDate, annualVolumeBands]);
+  }, [stickyHeaderMetrics, datasetMaxDate, effectiveVolumeBands]);
 
   const stickyMtdPace = useMemo(() => {
     const anchorIso = stickyHeaderMetrics.anchorIso || datasetMaxDate || toIsoDate(new Date());
@@ -2061,9 +2070,9 @@ export default function SalesAnalyticsDashboardApp() {
     const elapsedDays = Math.max(1, Math.floor((anchorDate.getTime() - monthStart.getTime()) / 86400000) + 1);
     const annualized = safeNum(stickyHeaderMetrics.mtd.netVolume) * (365 / elapsedDays);
     return {
-      toneClass: annualized >= annualVolumeBands.greenMin ? "text-[var(--kpi-good)]" : annualized >= annualVolumeBands.yellowMin ? "text-[var(--kpi-warn)]" : "text-[var(--kpi-bad)]",
+      toneClass: annualized >= effectiveVolumeBands.greenMin ? "text-[var(--kpi-good)]" : annualized >= effectiveVolumeBands.yellowMin ? "text-[var(--kpi-warn)]" : "text-[var(--kpi-bad)]",
     };
-  }, [stickyHeaderMetrics, datasetMaxDate, annualVolumeBands]);
+  }, [stickyHeaderMetrics, datasetMaxDate, effectiveVolumeBands]);
 
 
   const productMixData = useMemo(() => {
@@ -3267,7 +3276,7 @@ export default function SalesAnalyticsDashboardApp() {
                   tertiaryClassName={volumeMetric === "net" ? stickyYtdPace.toneClass : "text-[var(--kpi-goal)]"}
                   icon={DollarSign}
                   accent={volumeMetric === "net" ? stickyYtdPace.toneClass : "text-[var(--text-strong)]"}
-                  goalNote={volumeMetric === "net" ? `Goal ${currency(annualVolumeBands.greenMin)}` : ""}
+                  goalNote={volumeMetric === "net" ? `Goal ${currency(effectiveVolumeBands.greenMin)}` : ""}
                   rawValue={null}
                 />
                 <StatCard title="Close %" value={pct(stickyHeaderMetrics.ytd.closePct, 0)} subvalue="YTD" secondaryValue={`MTD ${pct(stickyHeaderMetrics.mtd.closePct, 0)}`}
@@ -3493,7 +3502,7 @@ export default function SalesAnalyticsDashboardApp() {
                       </div>
                       <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-bg)]/50 p-4">
                         <div className="text-xs uppercase tracking-[0.2em] text-[var(--kpi-title)]">{volumeMetric === "gross" ? "Gross Volume" : "Net Volume"}</div>
-                        <div className={`mt-2 text-xl font-semibold ${volumeMetric === "net" ? (annualizedNetVolume >= annualVolumeBands.greenMin ? "text-[var(--kpi-good)]" : annualizedNetVolume >= annualVolumeBands.yellowMin ? "text-[var(--kpi-warn)]" : "text-[var(--kpi-bad)]") : "text-[var(--text-strong)]"}`}>{currency(volumeMetric === "gross" ? performanceScorecard.grossVolume : performanceScorecard.netVolume)}</div>
+                        <div className={`mt-2 text-xl font-semibold ${volumeMetric === "net" ? (annualizedNetVolume >= effectiveVolumeBands.greenMin ? "text-[var(--kpi-good)]" : annualizedNetVolume >= effectiveVolumeBands.yellowMin ? "text-[var(--kpi-warn)]" : "text-[var(--kpi-bad)]") : "text-[var(--text-strong)]"}`}>{currency(volumeMetric === "gross" ? performanceScorecard.grossVolume : performanceScorecard.netVolume)}</div>
                       </div>
                       <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-bg)]/50 p-4">
                         <div className="text-xs uppercase tracking-[0.2em] text-[var(--kpi-title)]">Demo %</div>
@@ -4064,14 +4073,14 @@ export default function SalesAnalyticsDashboardApp() {
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div>
                       <div className="text-xs uppercase tracking-[0.25em] text-[var(--kpi-title)]">Net Volume - Org Total</div>
-                      <div className={`mt-2 text-[2.2rem] font-bold ${annualizedNetVolume >= annualVolumeBands.greenMin ? "text-[var(--kpi-good)]" : annualizedNetVolume >= annualVolumeBands.yellowMin ? "text-[var(--kpi-warn)]" : "text-[var(--kpi-bad)]"}`}>{currency(dashboardMetrics.netVolume)}</div>
-                      <div className="mt-1 text-sm text-[var(--kpi-title)]">Selected period actual • Annual pace: <span className={`font-semibold ${annualizedNetVolume >= annualVolumeBands.greenMin ? "text-[var(--kpi-good)]" : annualizedNetVolume >= annualVolumeBands.yellowMin ? "text-[var(--kpi-warn)]" : "text-[var(--kpi-bad)]"}`}>{currency(annualizedNetVolume)}</span></div>
+                      <div className={`mt-2 text-[2.2rem] font-bold ${annualizedNetVolume >= effectiveVolumeBands.greenMin ? "text-[var(--kpi-good)]" : annualizedNetVolume >= effectiveVolumeBands.yellowMin ? "text-[var(--kpi-warn)]" : "text-[var(--kpi-bad)]"}`}>{currency(dashboardMetrics.netVolume)}</div>
+                      <div className="mt-1 text-sm text-[var(--kpi-title)]">Selected period actual • Annual pace: <span className={`font-semibold ${annualizedNetVolume >= effectiveVolumeBands.greenMin ? "text-[var(--kpi-good)]" : annualizedNetVolume >= effectiveVolumeBands.yellowMin ? "text-[var(--kpi-warn)]" : "text-[var(--kpi-bad)]"}`}>{currency(annualizedNetVolume)}</span></div>
                     </div>
                     <div className="flex items-start gap-8">
                       <div>
                         <div className="text-xs uppercase tracking-[0.2em] text-[var(--kpi-title)]">Annualized Target</div>
                         <div className="mt-2 text-2xl font-semibold text-[var(--text-strong)]">{currency(effectiveGoalTargets.annualNetVolume)}</div>
-                        <div className={`mt-1 text-sm font-semibold ${annualizedNetVolume >= annualVolumeBands.greenMin ? "text-[var(--kpi-good)]" : annualizedNetVolume >= annualVolumeBands.yellowMin ? "text-[var(--kpi-warn)]" : "text-[var(--kpi-bad)]"}`}>{annualizedNetVolume - effectiveGoalTargets.annualNetVolume >= 0 ? "+" : ""}{currency(annualizedNetVolume - effectiveGoalTargets.annualNetVolume)} gap</div>
+                        <div className={`mt-1 text-sm font-semibold ${annualizedNetVolume >= effectiveVolumeBands.greenMin ? "text-[var(--kpi-good)]" : annualizedNetVolume >= effectiveVolumeBands.yellowMin ? "text-[var(--kpi-warn)]" : "text-[var(--kpi-bad)]"}`}>{annualizedNetVolume - effectiveGoalTargets.annualNetVolume >= 0 ? "+" : ""}{currency(annualizedNetVolume - effectiveGoalTargets.annualNetVolume)} gap</div>
                       </div>
                       <div>
                         <div className="text-xs uppercase tracking-[0.2em] text-[var(--kpi-title)]">Annual Goal</div>
@@ -4164,7 +4173,7 @@ export default function SalesAnalyticsDashboardApp() {
                   </div>
                   <div className="mt-4 h-2.5 rounded-full bg-[var(--panel-bg)]">
                     <div
-                      className={`h-2.5 rounded-full ${annualizedNetVolume >= annualVolumeBands.greenMin ? "bg-[var(--kpi-good)]" : annualizedNetVolume >= annualVolumeBands.yellowMin ? "bg-[var(--kpi-warn)]" : "bg-[var(--kpi-bad)]"}`}
+                      className={`h-2.5 rounded-full ${annualizedNetVolume >= effectiveVolumeBands.greenMin ? "bg-[var(--kpi-good)]" : annualizedNetVolume >= effectiveVolumeBands.yellowMin ? "bg-[var(--kpi-warn)]" : "bg-[var(--kpi-bad)]"}`}
                       style={{ width: `${Math.min(100, Math.max(6, (annualizedNetVolume / Math.max(1, effectiveGoalTargets.annualNetVolume)) * 100))}%` }}
                     />
                   </div>
