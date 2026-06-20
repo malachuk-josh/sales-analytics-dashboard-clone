@@ -1622,7 +1622,7 @@ export default function SalesAnalyticsDashboardApp() {
       { enabled: false, closePct: DEFAULT_GOAL_TARGETS.closePct, netPct: DEFAULT_GOAL_TARGETS.netPct, nsli: DEFAULT_GOAL_TARGETS.nsli, demoPct: DEFAULT_GOAL_TARGETS.demoPct, avgTicket: DEFAULT_GOAL_TARGETS.avgTicket, annualNetVolume: TEAM_DEFAULT_ANNUAL_NET_VOLUME[name] ?? DEFAULT_GOAL_TARGETS.annualNetVolume },
     ]))
   );
-  const [individualGoalOverride, setIndividualGoalOverride] = useState({ enabled: false, annualNetVolume: 4000000, closePct: DEFAULT_GOAL_TARGETS.closePct, netPct: DEFAULT_GOAL_TARGETS.netPct, nsli: DEFAULT_GOAL_TARGETS.nsli, demoPct: DEFAULT_GOAL_TARGETS.demoPct, avgTicket: DEFAULT_GOAL_TARGETS.avgTicket });
+  const [individualGoalOverride, setIndividualGoalOverride] = useState({ enabled: false, annualNetVolume: 2000000, closePct: DEFAULT_GOAL_TARGETS.closePct, netPct: DEFAULT_GOAL_TARGETS.netPct, nsli: DEFAULT_GOAL_TARGETS.nsli, demoPct: DEFAULT_GOAL_TARGETS.demoPct, avgTicket: DEFAULT_GOAL_TARGETS.avgTicket });
   const [goalManagementTab, setGoalManagementTab] = useState("All");
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
