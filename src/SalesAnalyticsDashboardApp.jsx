@@ -1604,6 +1604,12 @@ export default function SalesAnalyticsDashboardApp() {
   const [goalTargets, setGoalTargets] = useState(DEFAULT_GOAL_TARGETS);
   const [kpiColorBands, setKpiColorBands] = useState(DEFAULT_KPI_COLOR_BANDS);
   const [annualVolumeBands, setAnnualVolumeBands] = useState(DEFAULT_ANNUAL_VOLUME_BANDS);
+  const [teamGoalOverrides, setTeamGoalOverrides] = useState(() =>
+    Object.fromEntries(PRELOADED_GROUP_NAMES.map((name) => [
+      name,
+      { enabled: false, closePct: DEFAULT_GOAL_TARGETS.closePct, netPct: DEFAULT_GOAL_TARGETS.netPct, nsli: DEFAULT_GOAL_TARGETS.nsli, demoPct: DEFAULT_GOAL_TARGETS.demoPct, avgTicket: DEFAULT_GOAL_TARGETS.avgTicket },
+    ]))
+  );
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
@@ -2611,6 +2617,14 @@ export default function SalesAnalyticsDashboardApp() {
     return safeNum(dashboardMetrics.netVolume) * (365 / Math.max(1, selectedRangeDays));
   }, [dashboardMetrics.netVolume, selectedRangeDays]);
 
+  const effectiveGoalTargets = useMemo(() => {
+    const override = teamGoalOverrides[selectedGroup];
+    if (override?.enabled) {
+      return { ...goalTargets, closePct: override.closePct, netPct: override.netPct, nsli: override.nsli, demoPct: override.demoPct, avgTicket: override.avgTicket };
+    }
+    return goalTargets;
+  }, [goalTargets, teamGoalOverrides, selectedGroup]);
+
   const goalManagementCards = useMemo(() => {
     return [
       {
@@ -2618,7 +2632,7 @@ export default function SalesAnalyticsDashboardApp() {
         title: "Close %",
         subtitle: "Minimum close rate target",
         actual: safeNum(dashboardMetrics.closePct),
-        goal: safeNum(goalTargets.closePct),
+        goal: safeNum(effectiveGoalTargets.closePct),
         step: 0.01,
         inputType: "percent",
         formatter: (value) => pct(value, 0),
@@ -2628,7 +2642,7 @@ export default function SalesAnalyticsDashboardApp() {
         title: "Net %",
         subtitle: "Minimum net rate target",
         actual: safeNum(dashboardMetrics.netPct),
-        goal: safeNum(goalTargets.netPct),
+        goal: safeNum(effectiveGoalTargets.netPct),
         step: 0.01,
         inputType: "percent",
         formatter: (value) => pct(value, 0),
@@ -2638,7 +2652,7 @@ export default function SalesAnalyticsDashboardApp() {
         title: "NSLI",
         subtitle: "Minimum net sold per issued lead",
         actual: safeNum(dashboardMetrics.nsli),
-        goal: safeNum(goalTargets.nsli),
+        goal: safeNum(effectiveGoalTargets.nsli),
         step: 100,
         inputType: "currency",
         formatter: currency,
@@ -2648,7 +2662,7 @@ export default function SalesAnalyticsDashboardApp() {
         title: "Demo %",
         subtitle: "Minimum demo conversion rate",
         actual: safeNum(dashboardMetrics.demoPct),
-        goal: safeNum(goalTargets.demoPct),
+        goal: safeNum(effectiveGoalTargets.demoPct),
         step: 0.01,
         inputType: "percent",
         formatter: (value) => pct(value, 0),
@@ -2658,13 +2672,13 @@ export default function SalesAnalyticsDashboardApp() {
         title: "Avg Ticket",
         subtitle: "Minimum average ticket",
         actual: safeNum(dashboardMetrics.avgTicket),
-        goal: safeNum(goalTargets.avgTicket),
+        goal: safeNum(effectiveGoalTargets.avgTicket),
         step: 500,
         inputType: "currency",
         formatter: currency,
       },
     ];
-  }, [dashboardMetrics, goalTargets]);
+  }, [dashboardMetrics, effectiveGoalTargets]);
 
   const studioAnalyticsContext = useMemo(() => {
     const sortedByVolume = [...windowFilteredReps].sort((a, b) => safeNum(b.netVolume) - safeNum(a.netVolume));
@@ -4264,6 +4278,94 @@ export default function SalesAnalyticsDashboardApp() {
                   );
                 })}
               </div>
+
+              <Card className="mt-4 border-[var(--border-strong)] bg-[var(--card-bg)]">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold tracking-[0.05em] text-[var(--text-strong)]">Team Goal Overrides</CardTitle>
+                  <p className="text-[11px] text-[var(--kpi-title)]">Enable per-team goal targets. When active for the selected team, the dashboard uses those goals instead of the global defaults.</p>
+                </CardHeader>
+                <CardContent className="space-y-3 p-4 pt-0">
+                  {PRELOADED_GROUP_NAMES.map((teamName) => {
+                    const override = teamGoalOverrides[teamName] || {};
+                    const isActiveTeam = selectedGroup === teamName;
+                    return (
+                      <div key={teamName} className="rounded-xl border border-[var(--border)] bg-[var(--panel-bg)] p-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-[var(--text-strong)]">{teamName}</span>
+                            {isActiveTeam && (
+                              <span className="rounded-full bg-lime-500/15 px-2 py-0.5 text-[10px] font-medium text-[var(--kpi-good)]">active filter</span>
+                            )}
+                          </div>
+                          <Switch
+                            checked={!!override.enabled}
+                            onCheckedChange={(checked) =>
+                              setTeamGoalOverrides((current) => ({
+                                ...current,
+                                [teamName]: { ...current[teamName], enabled: checked },
+                              }))
+                            }
+                          />
+                        </div>
+                        {override.enabled && (
+                          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                            {[
+                              { key: "closePct", label: "Close %", step: 0.01, inputType: "percent" },
+                              { key: "netPct", label: "Net %", step: 0.01, inputType: "percent" },
+                              { key: "nsli", label: "NSLI", step: 100, inputType: "currency" },
+                              { key: "demoPct", label: "Demo %", step: 0.01, inputType: "percent" },
+                              { key: "avgTicket", label: "Avg Ticket", step: 500, inputType: "currency" },
+                            ].map(({ key, label, step, inputType }) => (
+                              <div key={key}>
+                                <div className="mb-1.5 text-[10px] uppercase tracking-[0.15em] text-[var(--kpi-title)]">{label}</div>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="h-7 w-7 shrink-0 border-[var(--border)] bg-[var(--panel-bg)] px-0 text-[var(--text-strong)]"
+                                    onClick={() =>
+                                      setTeamGoalOverrides((current) => ({
+                                        ...current,
+                                        [teamName]: { ...current[teamName], [key]: Math.max(step, safeNum(current[teamName][key]) - step) },
+                                      }))
+                                    }
+                                  >
+                                    −
+                                  </Button>
+                                  <Input
+                                    type="text"
+                                    value={formatGoalEditorValue(override[key], inputType)}
+                                    onChange={(event) =>
+                                      setTeamGoalOverrides((current) => ({
+                                        ...current,
+                                        [teamName]: { ...current[teamName], [key]: Math.max(step, parseGoalEditorValue(event.target.value, inputType)) },
+                                      }))
+                                    }
+                                    className="h-7 min-w-0 flex-1 rounded-lg border-[var(--border)] bg-[var(--panel-bg)] px-2 py-1 text-center text-xs font-semibold text-[var(--text-strong)]"
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="h-7 w-7 shrink-0 border-[var(--border)] bg-[var(--panel-bg)] px-0 text-[var(--text-strong)]"
+                                    onClick={() =>
+                                      setTeamGoalOverrides((current) => ({
+                                        ...current,
+                                        [teamName]: { ...current[teamName], [key]: safeNum(current[teamName][key]) + step },
+                                      }))
+                                    }
+                                  >
+                                    +
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
             </div>
           </div>
 
