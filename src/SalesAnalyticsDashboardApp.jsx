@@ -3222,9 +3222,10 @@ export default function SalesAnalyticsDashboardApp() {
                   secondaryValue={`MTD ${currency(volumeMetric === "gross" ? stickyHeaderMetrics.mtd.grossVolume : stickyHeaderMetrics.mtd.netVolume)}`}
                   secondaryRawValue={null}
                   tertiaryValue={volumeMetric === "net" ? `Annual pace ${currency(stickyYtdPace.annualized)}` : ""}
-                  tertiaryClassName="text-[var(--kpi-goal)]"
+                  tertiaryClassName={volumeMetric === "net" ? stickyYtdPace.toneClass : "text-[var(--kpi-goal)]"}
                   icon={DollarSign}
-                  accent="text-[var(--text-strong)]"
+                  accent={volumeMetric === "net" ? stickyYtdPace.toneClass : "text-[var(--text-strong)]"}
+                  goalNote={volumeMetric === "net" ? `Goal ${currency(annualVolumeBands.greenMin)}` : ""}
                   rawValue={null}
                 />
                 <StatCard title="Close %" value={pct(stickyHeaderMetrics.ytd.closePct, 0)} subvalue="YTD" secondaryValue={`MTD ${pct(stickyHeaderMetrics.mtd.closePct, 0)}`}
