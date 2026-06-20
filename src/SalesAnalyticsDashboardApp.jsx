@@ -3350,46 +3350,46 @@ export default function SalesAnalyticsDashboardApp() {
                             return [weeklyTrendTooltipFormatter(value), "Net Sales"];
                           }}
                         />
-                        {weeklyTrendMetric === "volume" ? (
-                          <>
-                            <Bar
-                              dataKey="grossVolume"
-                              radius={[8, 8, 0, 0]}
-                              fill={isDarkMode ? "#64748b" : "#94a3b8"}
-                              barSize={16}
-                              label={({ x, y, width, value }) => (
-                                <text
-                                  x={safeNum(x) + safeNum(width) / 2}
-                                  y={safeNum(y) - 8}
-                                  fill="var(--chart-label)"
-                                  fontSize={12}
-                                  fontWeight="700"
-                                  textAnchor="middle"
-                                >
-                                  {currency(value)}
-                                </text>
-                              )}
-                            />
-                            <Bar
-                              dataKey="netVolume"
-                              radius={[8, 8, 0, 0]}
-                              fill="#38bdf8"
-                              barSize={16}
-                              label={({ x, y, width, value }) => (
-                                <text
-                                  x={safeNum(x) + safeNum(width) / 2}
-                                  y={safeNum(y) - 8}
-                                  fill="var(--chart-label)"
-                                  fontSize={12}
-                                  fontWeight="700"
-                                  textAnchor="middle"
-                                >
-                                  {currency(value)}
-                                </text>
-                              )}
-                            />
-                          </>
-                        ) : (
+                        {weeklyTrendMetric === "volume" ? [
+                          <Bar
+                            key="weekly-trend-gross-volume"
+                            dataKey="grossVolume"
+                            radius={[8, 8, 0, 0]}
+                            fill={isDarkMode ? "#64748b" : "#94a3b8"}
+                            barSize={16}
+                            label={({ x, y, width, value }) => (
+                              <text
+                                x={safeNum(x) + safeNum(width) / 2}
+                                y={safeNum(y) - 8}
+                                fill="var(--chart-label)"
+                                fontSize={12}
+                                fontWeight="700"
+                                textAnchor="middle"
+                              >
+                                {currency(value)}
+                              </text>
+                            )}
+                          />,
+                          <Bar
+                            key="weekly-trend-net-volume"
+                            dataKey="netVolume"
+                            radius={[8, 8, 0, 0]}
+                            fill="#38bdf8"
+                            barSize={16}
+                            label={({ x, y, width, value }) => (
+                              <text
+                                x={safeNum(x) + safeNum(width) / 2}
+                                y={safeNum(y) - 8}
+                                fill="var(--chart-label)"
+                                fontSize={12}
+                                fontWeight="700"
+                                textAnchor="middle"
+                              >
+                                {currency(value)}
+                              </text>
+                            )}
+                          />,
+                        ] : (
                           <Bar
                             dataKey="metricValue"
                             radius={[8, 8, 0, 0]}
