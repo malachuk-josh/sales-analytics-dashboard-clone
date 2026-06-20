@@ -1607,7 +1607,6 @@ export default function SalesAnalyticsDashboardApp() {
   const [productGraphMetric, setProductGraphMetric] = useState("nsli");
   const [volumeMetric, setVolumeMetric] = useState("net");
   const [analystPrompt, setAnalystPrompt] = useState("");
-  const [analystMessages, setAnalystMessages] = useState([]);
   const [showFiltersPanel, setShowFiltersPanel] = useState(true);
   const [showTeamBuilderPanel, setShowTeamBuilderPanel] = useState(false);
   const [activeWorkspace, setActiveWorkspace] = useState("reviewStudio");
@@ -2733,88 +2732,6 @@ export default function SalesAnalyticsDashboardApp() {
     ];
   }, [dashboardMetrics, editingGoals]);
 
-  const studioAnalyticsContext = useMemo(() => {
-    const sortedByVolume = [...windowFilteredReps].sort((a, b) => safeNum(b.netVolume) - safeNum(a.netVolume));
-    const focusRep = selectedRepRecord || sortedByVolume[0] || null;
-    const leader = sortedByVolume[0] || null;
-    const trailer = sortedByVolume.length ? sortedByVolume[sortedByVolume.length - 1] : null;
-    const primaryCoaching = focusRep ? coachingForRep(focusRep, windowFilteredReps, performanceTimeframe) : [];
-    const volumeValue = volumeMetric === "gross" ? safeNum(dashboardMetrics.grossVolume) : safeNum(dashboardMetrics.netVolume);
-    const volumeLabel = volumeMetric === "gross" ? "gross volume" : "net volume";
-    const focusLabel = selectedRep !== "All Reps"
-      ? selectedRep
-      : selectedGroup !== "All Groups"
-        ? `${selectedGroup} team`
-        : "all filtered reps";
-    const topProduct = productMixData.length ? productMixData[0].name : selectedProduct;
-    const weakestProduct = productMixData.length ? productMixData[productMixData.length - 1].name : selectedProduct;
-
-    return {
-      focusRep,
-      leader,
-      trailer,
-      primaryCoaching,
-      volumeValue,
-      volumeLabel,
-      focusLabel,
-      topProduct,
-      weakestProduct,
-    };
-  }, [windowFilteredReps, selectedRepRecord, performanceTimeframe, volumeMetric, dashboardMetrics, selectedRep, selectedGroup, productMixData, selectedProduct]);
-
-  const buildAnalystResponse = (question = "") => {
-    const prompt = cleanText(question).toLowerCase();
-    const focusRep = studioAnalyticsContext.focusRep;
-    const coaching = studioAnalyticsContext.primaryCoaching || [];
-    const lines = [];
-
-    lines.push(`Scope: ${studioAnalyticsContext.focusLabel} • ${selectedProduct} • ${effectiveRangeLabel}.`);
-    lines.push(`Current ${studioAnalyticsContext.volumeLabel}: ${currency(studioAnalyticsContext.volumeValue)}. Close rate: ${pct(dashboardMetrics.closePct, 0)}. Net: ${pct(dashboardMetrics.netPct)}. NSLI: ${currency(dashboardMetrics.nsli)}. Demo: ${pct(dashboardMetrics.demoPct)}.`);
-
-    if (studioAnalyticsContext.topProduct && studioAnalyticsContext.topProduct !== "All Products") {
-      lines.push(`Best-performing product in the current view: ${studioAnalyticsContext.topProduct}. Weakest product exposure in the current ranking: ${studioAnalyticsContext.weakestProduct}.`);
-    }
-
-    if (focusRep) {
-      lines.push(`Primary rep focus: ${focusRep.rep} (${focusRep.team}). Movement profile: ${focusRep.movement}. Avg ticket: ${currency(avgTicketFromRep(focusRep))}.`);
-    }
-
-    const priorities = [];
-    if (dashboardMetrics.closePct < goalTargets.closePct) priorities.push("Raise close rate by tightening discovery, urgency, and the ask.");
-    if (dashboardMetrics.demoPct < goalTargets.demoPct) priorities.push("Improve demo quality and set control so more issued leads become real selling opportunities.");
-    if (dashboardMetrics.netPct < goalTargets.netPct) priorities.push("Reduce fallout with cleaner expectation setting, financing alignment, and better next-step control.");
-    if (dashboardMetrics.nsli < goalTargets.nsli) priorities.push("Lift NSLI with stronger premium anchoring, better package framing, and tighter product-fit recommendations.");
-    if (!priorities.length) priorities.push("Core KPI mix is healthy. Focus on replicating what is already working across more reps and product categories.");
-
-    lines.push(`Priority actions: ${priorities.slice(0, 2).join(" ")}`);
-
-    if (coaching.length) {
-      const matched = coaching.find((item) => item.framework === "Gap Selling") || coaching[0];
-      if (matched) {
-        lines.push(`${matched.framework}: ${matched.guidance}`);
-      }
-    }
-
-    if (prompt.includes("compare") && studioAnalyticsContext.leader && studioAnalyticsContext.trailer) {
-      lines.push(`Comparison: ${studioAnalyticsContext.leader.rep} leads the current view at ${currency(studioAnalyticsContext.leader.netVolume)} net volume, while ${studioAnalyticsContext.trailer.rep} trails at ${currency(studioAnalyticsContext.trailer.netVolume)}.`);
-    }
-
-    if (prompt.includes("team") && selectedGroup !== "All Groups") {
-      lines.push(`Team read: ${selectedGroup} currently has ${windowFilteredReps.length} reps in scope. Use the refresh button after changing group or rep filters to regenerate this coaching summary against the current view.`);
-    }
-
-    return lines.join(String.fromCharCode(10, 10));
-  };
-
-  const refreshAnalystRecommendations = () => {
-    setAnalystMessages([
-      {
-        role: "assistant",
-        content: buildAnalystResponse(),
-      },
-    ]);
-  };
-
   const productTabs = ["All Products", "Baths", "Windows", "Doors", "Roofing", "Siding", "Roofing + Siding", "Windows + Doors"];
 
   async function onUpload(event) {
@@ -3931,48 +3848,7 @@ export default function SalesAnalyticsDashboardApp() {
                   </CardContent>
                 </Card>
               </div>
-              <div className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-12">
-                <Card className="xl:col-span-12 border-[var(--border-strong)] bg-[var(--card-bg)]">
-                  <CardHeader>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <CardTitle className="text-sm uppercase tracking-[0.25em] text-[#9aa7bb]">AI Analytics Recommendations</CardTitle>
-                        <div className="mt-1 text-xs text-[var(--kpi-title)]">Refresh to regenerate coaching from the current group, rep, product, and date-range selections.</div>
-                      </div>
-                      <Button
-                        type="button"
-                        onClick={refreshAnalystRecommendations}
-                        className="rounded-xl bg-[var(--button-active-bg)] text-[var(--text-strong)] hover:bg-[#425268]"
-                      >
-                        Refresh Insights
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline" className="border-[var(--border)] bg-[var(--panel-bg)] text-[var(--text-soft)]">Scope: {studioAnalyticsContext.focusLabel}</Badge>
-                      <Badge variant="outline" className="border-[var(--border)] bg-[var(--panel-bg)] text-[var(--text-soft)]">Product: {selectedProduct}</Badge>
-                      <Badge variant="outline" className="border-[var(--border)] bg-[var(--panel-bg)] text-[var(--text-soft)]">Range: {effectiveRangeLabel}</Badge>
-                    </div>
-                    <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-bg)]/60">
-                      <ScrollArea className="h-[320px]">
-                        <div className="space-y-3 p-4">
-                          {analystMessages.length ? analystMessages.map((message, index) => (
-                            <div key={`${message.role}-${index}`} className={`rounded-2xl border px-4 py-3 ${message.role === "assistant" ? "border-[var(--border-strong)] bg-[#273140] text-[var(--text-strong)]" : "border-[var(--border)] bg-[#1d2430] text-[var(--text-soft)]"}`}>
-                              <div className="mb-1 text-[10px] uppercase tracking-[0.18em] text-[#8ea0b8]">{message.role === "assistant" ? "AI Analyst" : "You"}</div>
-                              <div className="whitespace-pre-wrap text-sm leading-6">{message.content}</div>
-                            </div>
-                          )) : (
-                            <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[#1d2430] px-4 py-6 text-sm text-[#8ea0b8]">
-                              No recommendations yet. Click <span className="font-semibold text-[var(--text-soft)]">Refresh Insights</span> to generate a coaching read for the current Review Studio selections.
-                            </div>
-                          )}
-                        </div>
-                      </ScrollArea>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>          </div>
+          </div>
 
           <div className={activeDepartment === "Sales Department" && activeWorkspace === "goalManagement" ? "block" : "hidden"}>
             <div className="sticky top-0 z-30 -mx-4 px-4 pb-1.5 backdrop-blur lg:-mx-6 lg:px-6" style={{ backgroundColor: "var(--header-bg)" }}>
