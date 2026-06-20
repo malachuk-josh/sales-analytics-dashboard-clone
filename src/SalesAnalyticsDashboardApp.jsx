@@ -42,15 +42,15 @@ const Trophy = SimpleIcon;
 const CalendarDays = SimpleIcon;
 const Sun = SimpleIcon;
 const Moon = SimpleIcon;
-const PanelLeftClose = ({ className = "h-4 w-4" }) => (
+const ChevronUp = ({ className = "h-4 w-4" }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-    <path d="M15 18 9 12l6-6" />
+    <path d="M18 15l-6-6-6 6" />
   </svg>
 );
 
-const PanelLeftOpen = ({ className = "h-4 w-4" }) => (
+const ChevronDown = ({ className = "h-4 w-4" }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-    <path d="M9 18l6-6-6-6" />
+    <path d="M6 9l6 6 6-6" />
   </svg>
 );
 
@@ -3104,12 +3104,11 @@ export default function SalesAnalyticsDashboardApp() {
                       setIsDashboardHeaderCollapsed((current) => !current);
                       setDashboardRangeEditorOpen(false);
                     }}
-                    className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--panel-bg)] px-3 text-[13px] font-semibold text-[var(--text-soft)] hover:bg-[var(--button-hover)]"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--panel-bg)] text-[var(--text-soft)] hover:bg-[var(--button-hover)]"
                     aria-expanded={!isDashboardHeaderCollapsed}
                     aria-label={isDashboardHeaderCollapsed ? "Expand dashboard header" : "Collapse dashboard header"}
                   >
-                    {isDashboardHeaderCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-                    <span>{isDashboardHeaderCollapsed ? "Expand" : "Collapse"}</span>
+                    {isDashboardHeaderCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
                   </button>
                 </div>
                 {!isDashboardHeaderCollapsed ? (
@@ -3199,22 +3198,6 @@ export default function SalesAnalyticsDashboardApp() {
                   </button>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 xl:justify-end">
-                  <div className="mr-2 flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--panel-bg)] p-1">
-                    <button
-                      type="button"
-                      onClick={() => setVolumeMetric("net")}
-                      className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${volumeMetric === "net" ? "bg-[var(--button-active-bg)] text-[var(--text-strong)]" : "text-[#a9b4c5] hover:bg-[var(--button-bg)]"}`}
-                    >
-                      Net
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setVolumeMetric("gross")}
-                      className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${volumeMetric === "gross" ? "bg-[var(--button-active-bg)] text-[var(--text-strong)]" : "text-[#a9b4c5] hover:bg-[var(--button-bg)]"}`}
-                    >
-                      Gross
-                    </button>
-                  </div>
                   {productTabs.map((product) => (
                     <button
                       key={product}
