@@ -2587,7 +2587,7 @@ export default function SalesAnalyticsDashboardApp() {
         demoPct: issueCount > 0 ? demoCount / issueCount : 0,
         netPct: soldCount > 0 ? netCount / soldCount : 0,
         nsli: issueCount > 0 ? netVolume / issueCount : 0,
-        gsli: issueCount > 0 ? soldPriceAmount / issueCount : 0,
+        avgTicket: netCount > 0 ? netVolume / netCount : 0,
       };
     }
 
@@ -2634,7 +2634,7 @@ export default function SalesAnalyticsDashboardApp() {
       demoPct: weightedAverage("demoPct"),
       netPct: weightedAverage("netPct"),
       nsli: weightedAverage("nsli"),
-      gsli: estimatedIssueCount > 0 ? workingAmount / estimatedIssueCount : 0,
+      avgTicket: estimatedNetCount > 0 ? totalVolume / estimatedNetCount : 0,
     };
   }, [uploadData, scorecardDateRange, selectedRep, selectedGroup, selectedGroupMembers, selectedProduct, scorecardFilteredReps, scorecardWeeks]);
   const selectedRangeDays = useMemo(() => {
@@ -3423,9 +3423,9 @@ export default function SalesAnalyticsDashboardApp() {
                         <div className="mt-1 text-xs text-[var(--kpi-title)]">Goal {currency(goalTargets.nsli)}</div>
                       </div>
                       <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-bg)]/50 p-4">
-                        <div className="text-xs uppercase tracking-[0.2em] text-[var(--kpi-title)]">GSLI</div>
-                        <div className="mt-2 text-xl font-semibold text-[var(--text-strong)]">{currency(performanceScorecard.gsli)}</div>
-                        <div className="mt-1 text-xs text-[var(--kpi-title)]">Sold Price Split ÷ Issue Split</div>
+                        <div className="text-xs uppercase tracking-[0.2em] text-[var(--kpi-title)]">Avg Ticket</div>
+                        <div className={`mt-2 text-xl font-semibold ${metricAccentClass("Avg Ticket", performanceScorecard.avgTicket, "text-[var(--text-strong)]", goalTargets, kpiColorBands)}`}>{currency(performanceScorecard.avgTicket)}</div>
+                        <div className="mt-1 text-xs text-[var(--kpi-title)]">Goal {currency(goalTargets.avgTicket)}</div>
                       </div>
                     </div>
                   </CardContent>
