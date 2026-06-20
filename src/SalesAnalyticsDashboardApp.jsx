@@ -3339,24 +3339,44 @@ export default function SalesAnalyticsDashboardApp() {
                           }}
                         />
                         {weeklyTrendMetric === "volume" ? (
-                          <Bar
-                            dataKey={volumeMetric === "gross" ? "grossVolume" : "netVolume"}
-                            radius={[8, 8, 0, 0]}
-                            fill={volumeMetric === "gross" ? (isDarkMode ? "#64748b" : "#94a3b8") : "#38bdf8"}
-                            barSize={20}
-                            label={({ x, y, width, value }) => (
-                              <text
-                                x={safeNum(x) + safeNum(width) / 2}
-                                y={safeNum(y) - 8}
-                                fill="var(--chart-label)"
-                                fontSize={14}
-                                fontWeight="700"
-                                textAnchor="middle"
-                              >
-                                {currency(value)}
-                              </text>
-                            )}
-                          />
+                          <>
+                            <Bar
+                              dataKey="grossVolume"
+                              radius={[8, 8, 0, 0]}
+                              fill={isDarkMode ? "#64748b" : "#94a3b8"}
+                              barSize={16}
+                              label={({ x, y, width, value }) => (
+                                <text
+                                  x={safeNum(x) + safeNum(width) / 2}
+                                  y={safeNum(y) - 8}
+                                  fill="var(--chart-label)"
+                                  fontSize={12}
+                                  fontWeight="700"
+                                  textAnchor="middle"
+                                >
+                                  {currency(value)}
+                                </text>
+                              )}
+                            />
+                            <Bar
+                              dataKey="netVolume"
+                              radius={[8, 8, 0, 0]}
+                              fill="#38bdf8"
+                              barSize={16}
+                              label={({ x, y, width, value }) => (
+                                <text
+                                  x={safeNum(x) + safeNum(width) / 2}
+                                  y={safeNum(y) - 8}
+                                  fill="var(--chart-label)"
+                                  fontSize={12}
+                                  fontWeight="700"
+                                  textAnchor="middle"
+                                >
+                                  {currency(value)}
+                                </text>
+                              )}
+                            />
+                          </>
                         ) : (
                           <Bar
                             dataKey="metricValue"
