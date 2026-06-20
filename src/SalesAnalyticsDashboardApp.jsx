@@ -2440,15 +2440,12 @@ export default function SalesAnalyticsDashboardApp() {
     });
   }, [weeklyTrendMetric, volumeMetric, performanceSeries, grossPerformanceSeries, uploadData, dateRange, selectedRep, selectedGroup, selectedGroupMembers, selectedProduct, filteredReps, selectedRepRecord, activeWeeks]);
 
-  const weeklyTrendDisplaySeries = useMemo(() => {
-    if (weeklyTrendMetric !== "volume") return weeklyTrendSeries;
-    return activeWeeks.map((week, index) => ({
-      label: week,
-      netVolume: safeNum(performanceSeries[index]?.metricValue),
-      grossVolume: safeNum(grossPerformanceSeries[index]?.metricValue),
-      metricValue: safeNum(performanceSeries[index]?.metricValue),
-    }));
-  }, [weeklyTrendMetric, weeklyTrendSeries, activeWeeks, performanceSeries, grossPerformanceSeries]);
+  const weeklyTrendDisplaySeries = useMemo(() => activeWeeks.map((week, index) => ({
+    label: week,
+    metricValue: safeNum(weeklyTrendSeries[index]?.metricValue),
+    netVolume: safeNum(performanceSeries[index]?.metricValue),
+    grossVolume: safeNum(grossPerformanceSeries[index]?.metricValue),
+  })), [activeWeeks, weeklyTrendSeries, performanceSeries, grossPerformanceSeries]);
 
   const isWeeklyTrendNetSales = weeklyTrendMetric === "netSales";
   const weeklyTrendAxisFormatter = (value) => isWeeklyTrendNetSales
@@ -3313,7 +3310,12 @@ export default function SalesAnalyticsDashboardApp() {
                   </CardHeader>
                   <CardContent className="h-[470px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={weeklyTrendDisplaySeries} margin={{ top: 28, right: 16, left: 6, bottom: 68 }} barGap={weeklyTrendMetric === "volume" ? 3 : 6}>
+                      <BarChart
+                        key={`weekly-trend-${weeklyTrendMetric}-${volumeMetric}`}
+                        data={weeklyTrendDisplaySeries}
+                        margin={{ top: 28, right: 16, left: 6, bottom: 68 }}
+                        barGap={weeklyTrendMetric === "volume" ? 3 : 6}
+                      >
                         <CartesianGrid stroke="#1e293b" vertical={false} />
                         <XAxis
                           dataKey="label"
@@ -3337,56 +3339,24 @@ export default function SalesAnalyticsDashboardApp() {
                           }}
                         />
                         {weeklyTrendMetric === "volume" ? (
-                          <>
-                            <Bar dataKey="grossVolume" radius={[8, 8, 0, 0]} fill={isDarkMode ? "#64748b" : "#94a3b8"} barSize={20} />
-                            <Bar
-                              dataKey="grossVolume"
-                              fill="transparent"
-                              stroke="transparent"
-                              legendType="none"
-                              isAnimationActive={false}
-                              barSize={0}
-                              label={({ x, y, width, value }) => (
-                                <text
-                                  x={safeNum(x) + safeNum(width) / 2}
-                                  y={safeNum(y) - 8}
-                                  fill="var(--chart-label)"
-                                  opacity={0.25}
-                                  fontSize={14}
-                                  fontWeight="700"
-                                  textAnchor="middle"
-                                >
-                                  {currency(value)}
-                                </text>
-                              )}
-                            />
-                            <Bar
-                              dataKey="netVolume"
-                              radius={[8, 8, 0, 0]}
-                              fill="#38bdf8"
-                              barSize={20}
-                            />
-                            <Bar
-                              dataKey="netVolume"
-                              fill="transparent"
-                              stroke="transparent"
-                              legendType="none"
-                              isAnimationActive={false}
-                              barSize={0}
-                              label={({ x, y, width, value }) => (
-                                <text
-                                  x={safeNum(x) + safeNum(width) / 2}
-                                  y={safeNum(y) - 8}
-                                  fill="var(--chart-label)"
-                                  fontSize={14}
-                                  fontWeight="700"
-                                  textAnchor="middle"
-                                >
-                                  {currency(value)}
-                                </text>
-                              )}
-                            />
-                          </>
+                          <Bar
+                            dataKey={volumeMetric === "gross" ? "grossVolume" : "netVolume"}
+                            radius={[8, 8, 0, 0]}
+                            fill={volumeMetric === "gross" ? (isDarkMode ? "#64748b" : "#94a3b8") : "#38bdf8"}
+                            barSize={20}
+                            label={({ x, y, width, value }) => (
+                              <text
+                                x={safeNum(x) + safeNum(width) / 2}
+                                y={safeNum(y) - 8}
+                                fill="var(--chart-label)"
+                                fontSize={14}
+                                fontWeight="700"
+                                textAnchor="middle"
+                              >
+                                {currency(value)}
+                              </text>
+                            )}
+                          />
                         ) : (
                           <Bar
                             dataKey="metricValue"
