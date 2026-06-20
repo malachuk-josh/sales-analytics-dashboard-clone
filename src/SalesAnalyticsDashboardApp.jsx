@@ -1607,7 +1607,7 @@ export default function SalesAnalyticsDashboardApp() {
   const [teamGoalOverrides, setTeamGoalOverrides] = useState(() =>
     Object.fromEntries(PRELOADED_GROUP_NAMES.map((name) => [
       name,
-      { enabled: false, closePct: DEFAULT_GOAL_TARGETS.closePct, netPct: DEFAULT_GOAL_TARGETS.netPct, nsli: DEFAULT_GOAL_TARGETS.nsli, demoPct: DEFAULT_GOAL_TARGETS.demoPct, avgTicket: DEFAULT_GOAL_TARGETS.avgTicket },
+      { enabled: false, closePct: DEFAULT_GOAL_TARGETS.closePct, netPct: DEFAULT_GOAL_TARGETS.netPct, nsli: DEFAULT_GOAL_TARGETS.nsli, demoPct: DEFAULT_GOAL_TARGETS.demoPct, avgTicket: DEFAULT_GOAL_TARGETS.avgTicket, annualNetVolume: DEFAULT_GOAL_TARGETS.annualNetVolume },
     ]))
   );
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -2620,7 +2620,7 @@ export default function SalesAnalyticsDashboardApp() {
   const effectiveGoalTargets = useMemo(() => {
     const override = teamGoalOverrides[selectedGroup];
     if (override?.enabled) {
-      return { ...goalTargets, closePct: override.closePct, netPct: override.netPct, nsli: override.nsli, demoPct: override.demoPct, avgTicket: override.avgTicket };
+      return { ...goalTargets, closePct: override.closePct, netPct: override.netPct, nsli: override.nsli, demoPct: override.demoPct, avgTicket: override.avgTicket, annualNetVolume: override.annualNetVolume };
     }
     return goalTargets;
   }, [goalTargets, teamGoalOverrides, selectedGroup]);
@@ -4032,8 +4032,8 @@ export default function SalesAnalyticsDashboardApp() {
                     <div className="flex items-start gap-8">
                       <div>
                         <div className="text-xs uppercase tracking-[0.2em] text-[var(--kpi-title)]">Annualized Target</div>
-                        <div className="mt-2 text-2xl font-semibold text-[var(--text-strong)]">{currency(goalTargets.annualNetVolume)}</div>
-                        <div className={`mt-1 text-sm font-semibold ${annualizedNetVolume >= annualVolumeBands.greenMin ? "text-[var(--kpi-good)]" : annualizedNetVolume >= annualVolumeBands.yellowMin ? "text-[var(--kpi-warn)]" : "text-[var(--kpi-bad)]"}`}>{annualizedNetVolume - goalTargets.annualNetVolume >= 0 ? "+" : ""}{currency(annualizedNetVolume - goalTargets.annualNetVolume)} gap</div>
+                        <div className="mt-2 text-2xl font-semibold text-[var(--text-strong)]">{currency(effectiveGoalTargets.annualNetVolume)}</div>
+                        <div className={`mt-1 text-sm font-semibold ${annualizedNetVolume >= annualVolumeBands.greenMin ? "text-[var(--kpi-good)]" : annualizedNetVolume >= annualVolumeBands.yellowMin ? "text-[var(--kpi-warn)]" : "text-[var(--kpi-bad)]"}`}>{annualizedNetVolume - effectiveGoalTargets.annualNetVolume >= 0 ? "+" : ""}{currency(annualizedNetVolume - effectiveGoalTargets.annualNetVolume)} gap</div>
                       </div>
                       <div>
                         <div className="text-xs uppercase tracking-[0.2em] text-[var(--kpi-title)]">Annual Goal</div>
@@ -4127,7 +4127,7 @@ export default function SalesAnalyticsDashboardApp() {
                   <div className="mt-4 h-2.5 rounded-full bg-[var(--panel-bg)]">
                     <div
                       className={`h-2.5 rounded-full ${annualizedNetVolume >= annualVolumeBands.greenMin ? "bg-[var(--kpi-good)]" : annualizedNetVolume >= annualVolumeBands.yellowMin ? "bg-[var(--kpi-warn)]" : "bg-[var(--kpi-bad)]"}`}
-                      style={{ width: `${Math.min(100, Math.max(6, (annualizedNetVolume / Math.max(1, goalTargets.annualNetVolume)) * 100))}%` }}
+                      style={{ width: `${Math.min(100, Math.max(6, (annualizedNetVolume / Math.max(1, effectiveGoalTargets.annualNetVolume)) * 100))}%` }}
                     />
                   </div>
                 </CardContent>
@@ -4315,6 +4315,7 @@ export default function SalesAnalyticsDashboardApp() {
                               { key: "nsli", label: "NSLI", step: 100, inputType: "currency" },
                               { key: "demoPct", label: "Demo %", step: 0.01, inputType: "percent" },
                               { key: "avgTicket", label: "Avg Ticket", step: 500, inputType: "currency" },
+                              { key: "annualNetVolume", label: "Net Volume", step: 500000, inputType: "currency" },
                             ].map(({ key, label, step, inputType }) => (
                               <div key={key}>
                                 <div className="mb-1.5 text-[10px] uppercase tracking-[0.15em] text-[var(--kpi-title)]">{label}</div>
