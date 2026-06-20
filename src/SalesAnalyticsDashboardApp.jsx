@@ -2773,9 +2773,6 @@ export default function SalesAnalyticsDashboardApp() {
         <aside className={`col-span-12 border-b border-[var(--sidebar-border)] bg-[var(--sidebar-bg)] p-4 transition-all duration-200 lg:sticky lg:top-0 lg:col-span-1 lg:h-screen lg:self-start lg:overflow-y-auto lg:border-b-0 lg:border-r lg:pb-10 ${isSidebarCollapsed ? "lg:w-[88px]" : "lg:w-[280px]"}`}>
           {isSidebarCollapsed ? (
             <div className="flex flex-col items-center gap-3 pt-1">
-              <div className="rounded-2xl border border-lime-500/40 bg-lime-500/10 px-2.5 py-2 text-[var(--kpi-good)]">
-                <Target className="h-4.5 w-4.5" />
-              </div>
               <Button
                 type="button"
                 variant="outline"
@@ -2786,36 +2783,7 @@ export default function SalesAnalyticsDashboardApp() {
               </Button>
             </div>
           ) : (
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex min-w-0 flex-1 items-center gap-2">
-                <div className="shrink-0 rounded-2xl border border-lime-500/40 bg-lime-500/10 px-2.5 py-2 text-[var(--kpi-good)]">
-                  <Target className="h-4.5 w-4.5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="w-full text-[1.55rem] font-black uppercase leading-[0.9] tracking-[0.06em] text-[#7ed14b]" style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif" }}>
-                    OVERWATCH
-                  </div>
-                  <div className="mt-1">
-                    <Select value={activeDepartment} onValueChange={setActiveDepartment}>
-                      <SelectTrigger className="h-8 border-[var(--border)] bg-[var(--panel-bg)] text-[12px] tracking-[0.08em] text-[var(--text-soft)]" style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif" }}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[
-                          "Sales Department",
-                          "Marketing",
-                          "Finance",
-                          "Production",
-                          "Admin",
-                          "Human Resources",
-                        ].map((department) => (
-                          <SelectItem key={department} value={department}>{department}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
+            <div className="flex items-center justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
