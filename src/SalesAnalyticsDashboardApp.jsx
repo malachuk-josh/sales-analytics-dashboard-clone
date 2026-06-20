@@ -1622,6 +1622,8 @@ export default function SalesAnalyticsDashboardApp() {
       { enabled: false, closePct: DEFAULT_GOAL_TARGETS.closePct, netPct: DEFAULT_GOAL_TARGETS.netPct, nsli: DEFAULT_GOAL_TARGETS.nsli, demoPct: DEFAULT_GOAL_TARGETS.demoPct, avgTicket: DEFAULT_GOAL_TARGETS.avgTicket, annualNetVolume: TEAM_DEFAULT_ANNUAL_NET_VOLUME[name] ?? DEFAULT_GOAL_TARGETS.annualNetVolume },
     ]))
   );
+  const [individualGoalOverride, setIndividualGoalOverride] = useState({ enabled: false, annualNetVolume: 4000000, closePct: DEFAULT_GOAL_TARGETS.closePct, netPct: DEFAULT_GOAL_TARGETS.netPct, nsli: DEFAULT_GOAL_TARGETS.nsli, demoPct: DEFAULT_GOAL_TARGETS.demoPct, avgTicket: DEFAULT_GOAL_TARGETS.avgTicket });
+  const [goalManagementTab, setGoalManagementTab] = useState("All");
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
@@ -2043,13 +2045,17 @@ export default function SalesAnalyticsDashboardApp() {
   }, [uploadData, datasetMaxDate, dashboardMetrics, selectedGroup, selectedGroupMembers, selectedRep, selectedProduct]);
 
   const effectiveVolumeBands = useMemo(() => {
+    if (selectedRep !== "All Reps" && safeNum(individualGoalOverride.annualNetVolume) > 0) {
+      const greenMin = safeNum(individualGoalOverride.annualNetVolume);
+      return { greenMin, yellowMin: greenMin * 0.9 };
+    }
     const override = teamGoalOverrides[selectedGroup];
     if (override && safeNum(override.annualNetVolume) > 0) {
       const greenMin = safeNum(override.annualNetVolume);
       return { greenMin, yellowMin: greenMin * 0.9 };
     }
     return annualVolumeBands;
-  }, [teamGoalOverrides, selectedGroup, annualVolumeBands]);
+  }, [selectedRep, individualGoalOverride, teamGoalOverrides, selectedGroup, annualVolumeBands]);
 
   const stickyYtdPace = useMemo(() => {
     const anchorIso = stickyHeaderMetrics.anchorIso || datasetMaxDate || toIsoDate(new Date());
@@ -2647,6 +2653,15 @@ export default function SalesAnalyticsDashboardApp() {
   }, [dashboardMetrics.netVolume, selectedRangeDays]);
 
   const effectiveGoalTargets = useMemo(() => {
+    if (selectedRep !== "All Reps") {
+      if (individualGoalOverride?.enabled) {
+        return { ...goalTargets, closePct: individualGoalOverride.closePct, netPct: individualGoalOverride.netPct, nsli: individualGoalOverride.nsli, demoPct: individualGoalOverride.demoPct, avgTicket: individualGoalOverride.avgTicket, annualNetVolume: individualGoalOverride.annualNetVolume };
+      }
+      if (safeNum(individualGoalOverride.annualNetVolume) > 0) {
+        return { ...goalTargets, annualNetVolume: safeNum(individualGoalOverride.annualNetVolume) };
+      }
+      return goalTargets;
+    }
     const override = teamGoalOverrides[selectedGroup];
     if (override?.enabled) {
       return { ...goalTargets, closePct: override.closePct, netPct: override.netPct, nsli: override.nsli, demoPct: override.demoPct, avgTicket: override.avgTicket, annualNetVolume: override.annualNetVolume };
@@ -2655,7 +2670,7 @@ export default function SalesAnalyticsDashboardApp() {
       return { ...goalTargets, annualNetVolume: safeNum(override.annualNetVolume) };
     }
     return goalTargets;
-  }, [goalTargets, teamGoalOverrides, selectedGroup]);
+  }, [goalTargets, teamGoalOverrides, selectedGroup, selectedRep, individualGoalOverride]);
 
   const goalManagementCards = useMemo(() => {
     return [
@@ -4330,91 +4345,128 @@ export default function SalesAnalyticsDashboardApp() {
               </div>
 
               <Card className="mt-4 border-[var(--border-strong)] bg-[var(--card-bg)]">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold tracking-[0.05em] text-[var(--text-strong)]">Team Goal Overrides</CardTitle>
-                  <p className="text-[11px] text-[var(--kpi-title)]">Enable per-team goal targets. When active for the selected team, the dashboard uses those goals instead of the global defaults.</p>
-                </CardHeader>
-                <CardContent className="space-y-3 p-4 pt-0">
-                  {PRELOADED_GROUP_NAMES.map((teamName) => {
+                <CardContent className="p-4">
+                  {/* Tab bar */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {["All", ...PRELOADED_GROUP_NAMES, "Individual"].map((tab) => {
+                      const isSelected = goalManagementTab === tab;
+                      const isActiveFilter =
+                        tab === "All" ? selectedGroup === "All Groups" && selectedRep === "All Reps"
+                        : tab === "Individual" ? selectedRep !== "All Reps"
+                        : selectedGroup === tab;
+                      return (
+                        <button
+                          key={tab}
+                          type="button"
+                          onClick={() => setGoalManagementTab(tab)}
+                          className={`relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                            isSelected
+                              ? "bg-lime-600 text-slate-950"
+                              : "border border-[var(--border)] bg-[var(--panel-bg)] text-[var(--text-soft)] hover:bg-[var(--button-hover)]"
+                          }`}
+                        >
+                          {tab}
+                          {isActiveFilter && (
+                            <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? "bg-slate-950/40" : "bg-lime-400"}`} />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* All — global defaults */}
+                  {goalManagementTab === "All" && (
+                    <p className="text-sm text-[var(--kpi-title)]">Global defaults are configured in the sections above. Net volume goal: {currency(goalTargets.annualNetVolume)}.</p>
+                  )}
+
+                  {/* Team tabs */}
+                  {PRELOADED_GROUP_NAMES.includes(goalManagementTab) && (() => {
+                    const teamName = goalManagementTab;
                     const override = teamGoalOverrides[teamName] || {};
-                    const isActiveTeam = selectedGroup === teamName;
+                    const GOAL_FIELDS = [
+                      { key: "annualNetVolume", label: "Net Volume", step: 500000, inputType: "currency" },
+                      { key: "closePct", label: "Close %", step: 0.01, inputType: "percent" },
+                      { key: "netPct", label: "Net %", step: 0.01, inputType: "percent" },
+                      { key: "nsli", label: "NSLI", step: 100, inputType: "currency" },
+                      { key: "demoPct", label: "Demo %", step: 0.01, inputType: "percent" },
+                      { key: "avgTicket", label: "Avg Ticket", step: 500, inputType: "currency" },
+                    ];
                     return (
-                      <div key={teamName} className="rounded-xl border border-[var(--border)] bg-[var(--panel-bg)] p-3">
-                        <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="mb-3 flex items-center justify-between">
+                          <span className="text-xs text-[var(--kpi-title)]">Net volume goal auto-applies when this team is selected. Toggle to also override other KPIs.</span>
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-[var(--text-strong)]">{teamName}</span>
-                            {isActiveTeam && (
-                              <span className="rounded-full bg-lime-500/15 px-2 py-0.5 text-[10px] font-medium text-[var(--kpi-good)]">active filter</span>
-                            )}
+                            <span className="text-xs text-[var(--kpi-title)]">Override KPIs</span>
+                            <Switch
+                              checked={!!override.enabled}
+                              onCheckedChange={(checked) =>
+                                setTeamGoalOverrides((current) => ({ ...current, [teamName]: { ...current[teamName], enabled: checked } }))
+                              }
+                            />
                           </div>
-                          <Switch
-                            checked={!!override.enabled}
-                            onCheckedChange={(checked) =>
-                              setTeamGoalOverrides((current) => ({
-                                ...current,
-                                [teamName]: { ...current[teamName], enabled: checked },
-                              }))
-                            }
-                          />
                         </div>
-                        {override.enabled && (
-                          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                            {[
-                              { key: "closePct", label: "Close %", step: 0.01, inputType: "percent" },
-                              { key: "netPct", label: "Net %", step: 0.01, inputType: "percent" },
-                              { key: "nsli", label: "NSLI", step: 100, inputType: "currency" },
-                              { key: "demoPct", label: "Demo %", step: 0.01, inputType: "percent" },
-                              { key: "avgTicket", label: "Avg Ticket", step: 500, inputType: "currency" },
-                              { key: "annualNetVolume", label: "Net Volume", step: 500000, inputType: "currency" },
-                            ].map(({ key, label, step, inputType }) => (
-                              <div key={key}>
-                                <div className="mb-1.5 text-[10px] uppercase tracking-[0.15em] text-[var(--kpi-title)]">{label}</div>
-                                <div className="flex items-center gap-1">
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="h-7 w-7 shrink-0 border-[var(--border)] bg-[var(--panel-bg)] px-0 text-[var(--text-strong)]"
-                                    onClick={() =>
-                                      setTeamGoalOverrides((current) => ({
-                                        ...current,
-                                        [teamName]: { ...current[teamName], [key]: Math.max(step, safeNum(current[teamName][key]) - step) },
-                                      }))
-                                    }
-                                  >
-                                    −
-                                  </Button>
-                                  <Input
-                                    type="text"
-                                    value={formatGoalEditorValue(override[key], inputType)}
-                                    onChange={(event) =>
-                                      setTeamGoalOverrides((current) => ({
-                                        ...current,
-                                        [teamName]: { ...current[teamName], [key]: Math.max(step, parseGoalEditorValue(event.target.value, inputType)) },
-                                      }))
-                                    }
-                                    className="h-7 min-w-0 flex-1 rounded-lg border-[var(--border)] bg-[var(--panel-bg)] px-2 py-1 text-center text-xs font-semibold text-[var(--text-strong)]"
-                                  />
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="h-7 w-7 shrink-0 border-[var(--border)] bg-[var(--panel-bg)] px-0 text-[var(--text-strong)]"
-                                    onClick={() =>
-                                      setTeamGoalOverrides((current) => ({
-                                        ...current,
-                                        [teamName]: { ...current[teamName], [key]: safeNum(current[teamName][key]) + step },
-                                      }))
-                                    }
-                                  >
-                                    +
-                                  </Button>
-                                </div>
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                          {GOAL_FIELDS.map(({ key, label, step, inputType }) => (
+                            <div key={key} className={key !== "annualNetVolume" && !override.enabled ? "opacity-40 pointer-events-none" : ""}>
+                              <div className="mb-1.5 text-[10px] uppercase tracking-[0.15em] text-[var(--kpi-title)]">{label}</div>
+                              <div className="flex items-center gap-1">
+                                <Button type="button" variant="outline" className="h-7 w-7 shrink-0 border-[var(--border)] bg-[var(--panel-bg)] px-0 text-[var(--text-strong)]"
+                                  onClick={() => setTeamGoalOverrides((current) => ({ ...current, [teamName]: { ...current[teamName], [key]: Math.max(step, safeNum(current[teamName][key]) - step) } }))}>−</Button>
+                                <Input type="text" value={formatGoalEditorValue(override[key], inputType)}
+                                  onChange={(event) => setTeamGoalOverrides((current) => ({ ...current, [teamName]: { ...current[teamName], [key]: Math.max(step, parseGoalEditorValue(event.target.value, inputType)) } }))}
+                                  className="h-7 min-w-0 flex-1 rounded-lg border-[var(--border)] bg-[var(--panel-bg)] px-2 py-1 text-center text-xs font-semibold text-[var(--text-strong)]" />
+                                <Button type="button" variant="outline" className="h-7 w-7 shrink-0 border-[var(--border)] bg-[var(--panel-bg)] px-0 text-[var(--text-strong)]"
+                                  onClick={() => setTeamGoalOverrides((current) => ({ ...current, [teamName]: { ...current[teamName], [key]: safeNum(current[teamName][key]) + step } }))}>+</Button>
                               </div>
-                            ))}
-                          </div>
-                        )}
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     );
-                  })}
+                  })()}
+
+                  {/* Individual tab */}
+                  {goalManagementTab === "Individual" && (() => {
+                    const override = individualGoalOverride;
+                    const GOAL_FIELDS = [
+                      { key: "annualNetVolume", label: "Net Volume", step: 500000, inputType: "currency" },
+                      { key: "closePct", label: "Close %", step: 0.01, inputType: "percent" },
+                      { key: "netPct", label: "Net %", step: 0.01, inputType: "percent" },
+                      { key: "nsli", label: "NSLI", step: 100, inputType: "currency" },
+                      { key: "demoPct", label: "Demo %", step: 0.01, inputType: "percent" },
+                      { key: "avgTicket", label: "Avg Ticket", step: 500, inputType: "currency" },
+                    ];
+                    return (
+                      <div>
+                        <div className="mb-3 flex items-center justify-between">
+                          <span className="text-xs text-[var(--kpi-title)]">Net volume goal auto-applies when a rep is selected. Toggle to also override other KPIs.</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-[var(--kpi-title)]">Override KPIs</span>
+                            <Switch
+                              checked={!!override.enabled}
+                              onCheckedChange={(checked) => setIndividualGoalOverride((current) => ({ ...current, enabled: checked }))}
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                          {GOAL_FIELDS.map(({ key, label, step, inputType }) => (
+                            <div key={key} className={key !== "annualNetVolume" && !override.enabled ? "opacity-40 pointer-events-none" : ""}>
+                              <div className="mb-1.5 text-[10px] uppercase tracking-[0.15em] text-[var(--kpi-title)]">{label}</div>
+                              <div className="flex items-center gap-1">
+                                <Button type="button" variant="outline" className="h-7 w-7 shrink-0 border-[var(--border)] bg-[var(--panel-bg)] px-0 text-[var(--text-strong)]"
+                                  onClick={() => setIndividualGoalOverride((current) => ({ ...current, [key]: Math.max(step, safeNum(current[key]) - step) }))}>−</Button>
+                                <Input type="text" value={formatGoalEditorValue(override[key], inputType)}
+                                  onChange={(event) => setIndividualGoalOverride((current) => ({ ...current, [key]: Math.max(step, parseGoalEditorValue(event.target.value, inputType)) }))}
+                                  className="h-7 min-w-0 flex-1 rounded-lg border-[var(--border)] bg-[var(--panel-bg)] px-2 py-1 text-center text-xs font-semibold text-[var(--text-strong)]" />
+                                <Button type="button" variant="outline" className="h-7 w-7 shrink-0 border-[var(--border)] bg-[var(--panel-bg)] px-0 text-[var(--text-strong)]"
+                                  onClick={() => setIndividualGoalOverride((current) => ({ ...current, [key]: safeNum(current[key]) + step }))}>+</Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             </div>
