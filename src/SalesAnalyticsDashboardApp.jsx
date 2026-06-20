@@ -42,8 +42,17 @@ const Trophy = SimpleIcon;
 const CalendarDays = SimpleIcon;
 const Sun = SimpleIcon;
 const Moon = SimpleIcon;
-const PanelLeftClose = SimpleIcon;
-const PanelLeftOpen = SimpleIcon;
+const PanelLeftClose = ({ className = "h-4 w-4" }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <path d="M15 18 9 12l6-6" />
+  </svg>
+);
+
+const PanelLeftOpen = ({ className = "h-4 w-4" }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <path d="M9 18l6-6-6-6" />
+  </svg>
+);
 
 const InfoIcon = ({ className = "h-4 w-4" }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
@@ -1601,6 +1610,7 @@ export default function SalesAnalyticsDashboardApp() {
   const [showTeamBuilderPanel, setShowTeamBuilderPanel] = useState(false);
   const [activeWorkspace, setActiveWorkspace] = useState("reviewStudio");
   const [activeDepartment, setActiveDepartment] = useState("Sales Department");
+  const [isDashboardHeaderCollapsed, setIsDashboardHeaderCollapsed] = useState(false);
   const [goalTargets, setGoalTargets] = useState(DEFAULT_GOAL_TARGETS);
   const [kpiColorBands, setKpiColorBands] = useState(DEFAULT_KPI_COLOR_BANDS);
   const [annualVolumeBands, setAnnualVolumeBands] = useState(DEFAULT_ANNUAL_VOLUME_BANDS);
@@ -3036,59 +3046,80 @@ export default function SalesAnalyticsDashboardApp() {
           </div>
 
           <div className={activeDepartment === "Sales Department" && activeWorkspace === "reviewStudio" ? "block" : "hidden"}>
-              <div className="sticky top-0 z-30 -mx-4 px-4 pb-1.5 backdrop-blur lg:-mx-6 lg:px-6" style={{ backgroundColor: "var(--header-bg)" }}>
-                <div className="flex flex-col gap-1.5 xl:flex-row xl:items-start xl:justify-between">
-                <div>
-                  <h1 className="text-lg font-semibold tracking-[-0.01em] text-[var(--text-strong)]" style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif" }}>Overwatch Analytics</h1>
-                  <p className="text-[11px] text-[#9ba8bb]">Interactive KPI review, coaching recommendations, projections, and live insights across any imported date range.</p>
-                </div>
-                <div className="flex w-full max-w-[520px] flex-col items-stretch gap-1 xl:items-end">
-                  <div className="flex flex-wrap items-center justify-end gap-2">
-                    <a
-                      href="https://improveit360-9618.my.salesforce.com/00OPf000007Ws9J"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center justify-center px-4 text-[13px] font-semibold transition hover:bg-white"
-                      style={actionPillStyle}
-                    >
-                      Data Source
-                    </a>
-                    <label
-                      className="inline-flex cursor-pointer items-center justify-center gap-2 px-4 text-[13px] font-semibold transition hover:bg-white"
-                      style={actionPillStyle}
-                    >
-                      <UploadIcon className="h-4 w-4" />
-                      <span>Upload New File</span>
-                      <input type="file" accept=".xlsx,.xls" className="hidden" onChange={onUpload} />
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (typeof document !== "undefined") {
-                          document.getElementById("period-kpi-scorecard")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                        }
-                      }}
-                      className="inline-flex items-center justify-center gap-2 px-4 text-[13px] font-semibold transition hover:bg-white"
-                      style={actionPillStyle}
-                    >
-                      <InfoIcon className="h-4 w-4" />
-                      <span>KPI Info</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsDarkMode((current) => !current)}
-                      className="inline-flex items-center justify-center gap-2 px-4 text-[13px] font-semibold transition hover:bg-white"
-                      style={actionPillStyle}
-                    >
-                      <DarkModeIcon className="h-4 w-4" />
-                      <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
-                    </button>
+            <div className={`sticky top-0 z-30 -mx-4 px-4 backdrop-blur lg:-mx-6 lg:px-6 ${isDashboardHeaderCollapsed ? "pb-1" : "pb-1.5"}`} style={{ backgroundColor: "var(--header-bg)" }}>
+              <div className="flex flex-col gap-1.5 xl:flex-row xl:items-start xl:justify-between">
+                <div className="flex items-start gap-3">
+                  <div>
+                    <h1 className="text-lg font-semibold tracking-[-0.01em] text-[var(--text-strong)]" style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif" }}>Overwatch Analytics</h1>
+                    {!isDashboardHeaderCollapsed ? (
+                      <p className="text-[11px] text-[#9ba8bb]">Interactive KPI review, coaching recommendations, projections, and live insights across any imported date range.</p>
+                    ) : null}
                   </div>
-                  <div className="text-right text-[10px] text-[var(--kpi-title)]">Loaded: {uploadMeta.workbookName}</div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDashboardHeaderCollapsed((current) => !current);
+                      setDashboardRangeEditorOpen(false);
+                    }}
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--panel-bg)] px-3 text-[13px] font-semibold text-[var(--text-soft)] hover:bg-[var(--button-hover)]"
+                    aria-expanded={!isDashboardHeaderCollapsed}
+                    aria-label={isDashboardHeaderCollapsed ? "Expand dashboard header" : "Collapse dashboard header"}
+                  >
+                    {isDashboardHeaderCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+                    <span>{isDashboardHeaderCollapsed ? "Expand" : "Collapse"}</span>
+                  </button>
                 </div>
+                {!isDashboardHeaderCollapsed ? (
+                  <div className="flex w-full max-w-[520px] flex-col items-stretch gap-1 xl:items-end">
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      <a
+                        href="https://improveit360-9618.my.salesforce.com/00OPf000007Ws9J"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center justify-center px-4 text-[13px] font-semibold transition hover:bg-white"
+                        style={actionPillStyle}
+                      >
+                        Data Source
+                      </a>
+                      <label
+                        className="inline-flex cursor-pointer items-center justify-center gap-2 px-4 text-[13px] font-semibold transition hover:bg-white"
+                        style={actionPillStyle}
+                      >
+                        <UploadIcon className="h-4 w-4" />
+                        <span>Upload New File</span>
+                        <input type="file" accept=".xlsx,.xls" className="hidden" onChange={onUpload} />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (typeof document !== "undefined") {
+                            document.getElementById("period-kpi-scorecard")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                          }
+                        }}
+                        className="inline-flex items-center justify-center gap-2 px-4 text-[13px] font-semibold transition hover:bg-white"
+                        style={actionPillStyle}
+                      >
+                        <InfoIcon className="h-4 w-4" />
+                        <span>KPI Info</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsDarkMode((current) => !current)}
+                        className="inline-flex items-center justify-center gap-2 px-4 text-[13px] font-semibold transition hover:bg-white"
+                        style={actionPillStyle}
+                      >
+                        <DarkModeIcon className="h-4 w-4" />
+                        <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
+                      </button>
+                    </div>
+                    <div className="text-right text-[10px] text-[var(--kpi-title)]">Loaded: {uploadMeta.workbookName}</div>
+                  </div>
+                ) : null}
               </div>
 
-              <div className="mt-2 flex flex-col gap-1.5 xl:flex-row xl:items-center xl:justify-between">
+              {!isDashboardHeaderCollapsed ? (
+                <>
+                  <div className="mt-2 flex flex-col gap-1.5 xl:flex-row xl:items-center xl:justify-between">
                 <div className="flex flex-wrap items-center gap-3">
                   {["7", "30", "60", "90"].map((option) => {
                     const isActive = performanceTimeframe === option && !dashboardRangeEditorOpen;
@@ -3239,6 +3270,8 @@ export default function SalesAnalyticsDashboardApp() {
                 <StatCard title="Avg Ticket" value={currency(stickyHeaderMetrics.ytd.avgTicket)} subvalue="YTD" secondaryValue={`MTD ${currency(stickyHeaderMetrics.mtd.avgTicket)}`}
                   secondaryRawValue={stickyHeaderMetrics.mtd.avgTicket} icon={Target} rawValue={stickyHeaderMetrics.ytd.avgTicket} />
               </div>
+                </>
+              ) : null}
             </div>
 
               <div className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-12">
