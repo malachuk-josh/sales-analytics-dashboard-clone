@@ -3035,55 +3035,63 @@ export default function SalesAnalyticsDashboardApp() {
 
               {!isDashboardHeaderCollapsed ? (
                 <>
-                  <div className="mt-2 flex flex-col gap-1.5 xl:flex-row xl:items-center xl:justify-between">
-                <div className="flex flex-wrap items-center gap-3">
-                  {["7", "30", "60", "90"].map((option) => {
-                    const isActive = performanceTimeframe === option && !dashboardRangeEditorOpen;
-                    return (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => {
-                          const nextRange = buildLookbackRange(option, dateRange.end || datasetMaxDate, datasetMinDate, datasetMaxDate);
-                          setPerformanceTimeframe(option);
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <Select
+                      value={performanceTimeframe}
+                      onValueChange={(val) => {
+                        if (val === "manual") {
+                          setDashboardDraftRange({
+                            start: dateRange.start || datasetMinDate,
+                            end: dateRange.end || datasetMaxDate,
+                          });
+                          setDashboardRangeEditorOpen(true);
+                        } else {
+                          const nextRange = buildLookbackRange(val, dateRange.end || datasetMaxDate, datasetMinDate, datasetMaxDate);
+                          setPerformanceTimeframe(val);
                           setDateRange(nextRange);
                           setDashboardDraftRange(nextRange);
                           setDashboardRangeEditorOpen(false);
-                        }}
-                        className={`min-w-[62px] rounded-xl border px-3 py-1.5 text-[13px] font-semibold ${isActive ? "border-[var(--toggle-active-border)] bg-[var(--toggle-active-bg)] text-[var(--toggle-active-text)]" : "border-[var(--border)] bg-[var(--button-bg)] text-[#a9b4c5] hover:bg-[var(--button-hover)]"}`}
-                      >
-                        {option}D
-                      </button>
-                    );
-                  })}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDashboardDraftRange({
-                        start: dateRange.start || datasetMinDate,
-                        end: dateRange.end || datasetMaxDate,
-                      });
-                      setDashboardRangeEditorOpen(true);
-                    }}
-                    className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-base font-semibold ${dashboardRangeEditorOpen || performanceTimeframe === "manual" ? "border-[#7a8ea9] bg-[var(--button-active-bg)] text-[var(--text-strong)] ring-1 ring-[var(--toggle-active-ring)]/70" : "border-[var(--border)] bg-[var(--panel-bg)] text-[var(--text-soft)] hover:bg-[var(--button-hover)]"}`}
-                  >
-                    <CalendarDays className="h-4 w-4" />
-                    {effectiveRangeLabel}
-                  </button>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 xl:justify-end">
-                  {productTabs.map((product) => (
-                    <button
-                      key={product}
-                      type="button"
-                      onClick={() => setSelectedProduct(product)}
-                      className={`rounded-xl border px-3 py-1.5 text-xs font-semibold ${selectedProduct === product ? "border-[#7a8ea9] bg-[var(--button-active-bg)] text-[var(--text-strong)] ring-1 ring-[var(--toggle-active-ring)]/55" : "border-[var(--border)] bg-[var(--button-bg)] text-[#a9b4c5] hover:bg-[var(--button-hover)]"}`}
+                        }
+                      }}
                     >
-                      {product}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                      <SelectTrigger className="h-9 w-[180px] rounded-xl border border-[var(--border)] bg-[var(--panel-bg)] text-[13px] font-semibold text-[var(--text-soft)]">
+                        {performanceTimeframe === "manual"
+                          ? <span className="truncate text-[var(--text-soft)]">{effectiveRangeLabel}</span>
+                          : <SelectValue />
+                        }
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="7">Last 7 Days</SelectItem>
+                        <SelectItem value="30">Last 30 Days</SelectItem>
+                        <SelectItem value="60">Last 60 Days</SelectItem>
+                        <SelectItem value="90">Last 90 Days</SelectItem>
+                        <SelectItem
+                          value="manual"
+                          onPointerDown={() => {
+                            if (performanceTimeframe === "manual") {
+                              setDashboardDraftRange({
+                                start: dateRange.start || datasetMinDate,
+                                end: dateRange.end || datasetMaxDate,
+                              });
+                              setDashboardRangeEditorOpen(true);
+                            }
+                          }}
+                        >
+                          Custom Range...
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={selectedProduct} onValueChange={setSelectedProduct}>
+                      <SelectTrigger className="h-9 w-[160px] rounded-xl border border-[var(--border)] bg-[var(--panel-bg)] text-[13px] font-semibold text-[var(--text-soft)]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {productTabs.map((product) => (
+                          <SelectItem key={product} value={product}>{product}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
               {dashboardRangeEditorOpen ? (
                 <div className="mt-4 max-w-[560px] rounded-[28px] border border-[var(--border-strong)] bg-[var(--card-bg)]/95 p-5 shadow-2xl shadow-slate-950/40">
