@@ -1596,7 +1596,7 @@ export default function SalesAnalyticsDashboardApp() {
     netPct: 0,
     avgTicket: 0,
   });
-  const [performanceTimeframe, setPerformanceTimeframe] = useState("90");
+  const [performanceTimeframe, setPerformanceTimeframe] = useState("manual");
   const [projectorTimeframe, setProjectorTimeframe] = useState("90");
   const [projectorManualRange, setProjectorManualRange] = useState({ start: "", end: "" });
   const [projectorRangeEditorOpen, setProjectorRangeEditorOpen] = useState(false);
@@ -2983,7 +2983,7 @@ export default function SalesAnalyticsDashboardApp() {
                   ) : null}
                 </div>
                 <div className="flex w-full flex-col items-stretch gap-1 xl:items-end">
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-end gap-2">
                     {!isDashboardHeaderCollapsed ? (
                       <>
                         <div className="mr-auto flex items-center gap-2">
