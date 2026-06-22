@@ -3013,7 +3013,7 @@ export default function SalesAnalyticsDashboardApp() {
                               <SelectItem value="30">30 Days</SelectItem>
                               <SelectItem value="60">60 Days</SelectItem>
                               <SelectItem value="90">90 Days</SelectItem>
-                              <SelectItem value="manual">Custom...</SelectItem>
+                              <SelectItem value="manual">{performanceTimeframe === "manual" ? effectiveRangeLabel : "Custom..."}</SelectItem>
                             </SelectContent>
                           </Select>
                           <Select value={selectedProduct} onValueChange={setSelectedProduct}>
