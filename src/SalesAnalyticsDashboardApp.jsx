@@ -2842,7 +2842,7 @@ export default function SalesAnalyticsDashboardApp() {
                               }
                             }}
                           >
-                            <SelectTrigger className="border-[var(--border)] bg-[var(--panel-bg)]"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="w-full border-[var(--border)] bg-[var(--panel-bg)]"><SelectValue /></SelectTrigger>
                             <SelectContent>{groupOptions.map((group) => <SelectItem key={group.value} value={group.value}>{group.label}</SelectItem>)}</SelectContent>
                           </Select>
                           <Button
@@ -4262,7 +4262,7 @@ export default function SalesAnalyticsDashboardApp() {
                             <div className="mt-3 grid grid-cols-[1fr_120px] items-center gap-2">
                               <div className="text-xs text-[var(--kpi-title)]">{currency(rep.netVolume)} net volume • {pct(rep.closePct, 0)} close</div>
                               <Select value={team.name} onValueChange={(value) => moveRepToTeam(rep.rep, value)}>
-                                <SelectTrigger className="h-8 border-[var(--border)] bg-[var(--panel-bg)] text-xs text-[var(--text-soft)]">
+                                <SelectTrigger className="h-8 w-full border-[var(--border)] bg-[var(--panel-bg)] text-xs text-[var(--text-soft)]">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
