@@ -1611,7 +1611,7 @@ export default function SalesAnalyticsDashboardApp() {
   const [showTeamBuilderPanel, setShowTeamBuilderPanel] = useState(false);
   const [activeWorkspace, setActiveWorkspace] = useState("reviewStudio");
   const [activeDepartment, setActiveDepartment] = useState("Sales Department");
-  const [isDashboardHeaderCollapsed, setIsDashboardHeaderCollapsed] = useState(false);
+  const [isDashboardHeaderCollapsed, setIsDashboardHeaderCollapsed] = useState(true);
   const [goalTargets, setGoalTargets] = useState(DEFAULT_GOAL_TARGETS);
   const [kpiColorBands, setKpiColorBands] = useState(DEFAULT_KPI_COLOR_BANDS);
   const [annualVolumeBands, setAnnualVolumeBands] = useState(DEFAULT_ANNUAL_VOLUME_BANDS);
@@ -2983,51 +2983,53 @@ export default function SalesAnalyticsDashboardApp() {
                   ) : null}
                 </div>
                 <div className="flex w-full flex-col items-stretch gap-1 xl:items-end">
-                  <div className="flex flex-wrap items-center justify-end gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {!isDashboardHeaderCollapsed ? (
                       <>
-                        <Select
-                          value={performanceTimeframe}
-                          onValueChange={(val) => {
-                            if (val === "manual") {
-                              setDashboardDraftRange({
-                                start: dateRange.start || datasetMinDate,
-                                end: dateRange.end || datasetMaxDate,
-                              });
-                              setDashboardRangeEditorOpen(true);
-                            } else {
-                              const nextRange = buildLookbackRange(val, dateRange.end || datasetMaxDate, datasetMinDate, datasetMaxDate);
-                              setPerformanceTimeframe(val);
-                              setDateRange(nextRange);
-                              setDashboardDraftRange(nextRange);
-                              setDashboardRangeEditorOpen(false);
-                            }
-                          }}
-                        >
-                          <SelectTrigger className="h-[38px] w-[120px] rounded-[14px] border-[#cbd7e6] bg-[#f8fbff] px-2 text-[13px] font-semibold text-[#111827] shadow-[0_1px_1px_rgba(15,23,42,0.03)]">
-                            {performanceTimeframe === "manual"
-                              ? <span className="truncate">{effectiveRangeLabel}</span>
-                              : <SelectValue />
-                            }
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="7">7 Days</SelectItem>
-                            <SelectItem value="30">30 Days</SelectItem>
-                            <SelectItem value="60">60 Days</SelectItem>
-                            <SelectItem value="90">90 Days</SelectItem>
-                            <SelectItem value="manual">Custom...</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Select value={selectedProduct} onValueChange={setSelectedProduct}>
-                          <SelectTrigger className="h-[38px] w-[130px] rounded-[14px] border-[#cbd7e6] bg-[#f8fbff] px-2 text-[13px] font-semibold text-[#111827] shadow-[0_1px_1px_rgba(15,23,42,0.03)]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {productTabs.map((product) => (
-                              <SelectItem key={product} value={product}>{product}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <div className="mr-auto flex items-center gap-2">
+                          <Select
+                            value={performanceTimeframe}
+                            onValueChange={(val) => {
+                              if (val === "manual") {
+                                setDashboardDraftRange({
+                                  start: dateRange.start || datasetMinDate,
+                                  end: dateRange.end || datasetMaxDate,
+                                });
+                                setDashboardRangeEditorOpen(true);
+                              } else {
+                                const nextRange = buildLookbackRange(val, dateRange.end || datasetMaxDate, datasetMinDate, datasetMaxDate);
+                                setPerformanceTimeframe(val);
+                                setDateRange(nextRange);
+                                setDashboardDraftRange(nextRange);
+                                setDashboardRangeEditorOpen(false);
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="h-[38px] w-[120px] rounded-[14px] border-[#cbd7e6] bg-[#f8fbff] px-2 text-[13px] font-semibold text-[#111827] shadow-[0_1px_1px_rgba(15,23,42,0.03)]">
+                              {performanceTimeframe === "manual"
+                                ? <span className="truncate">{effectiveRangeLabel}</span>
+                                : <SelectValue />
+                              }
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="7">7 Days</SelectItem>
+                              <SelectItem value="30">30 Days</SelectItem>
+                              <SelectItem value="60">60 Days</SelectItem>
+                              <SelectItem value="90">90 Days</SelectItem>
+                              <SelectItem value="manual">Custom...</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Select value={selectedProduct} onValueChange={setSelectedProduct}>
+                            <SelectTrigger className="h-[38px] w-[130px] rounded-[14px] border-[#cbd7e6] bg-[#f8fbff] px-2 text-[13px] font-semibold text-[#111827] shadow-[0_1px_1px_rgba(15,23,42,0.03)]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {productTabs.map((product) => (
+                                <SelectItem key={product} value={product}>{product}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                         <a
                           href="https://improveit360-9618.my.salesforce.com/00OPf000007Ws9J"
                           target="_blank"
