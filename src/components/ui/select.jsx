@@ -36,11 +36,11 @@ export function Select({ value, onValueChange, children }) {
   const triggerClassName = findTriggerClassName(children);
 
   return (
-    <SelectContext.Provider value={{ value }}>
+    <SelectContext.Provider value={{ value, items }}>
       <select
         value={value}
         onChange={(event) => onValueChange?.(event.target.value)}
-        className={`rounded-md border border-[var(--border)] bg-[var(--panel-bg)] px-3 py-2 text-sm text-[var(--text-soft)] outline-none transition focus:border-lime-400 ${triggerClassName}`}
+        className={`border border-[var(--border)] bg-[var(--panel-bg)] px-3 py-2 text-sm text-[var(--text-soft)] outline-none transition focus:border-lime-400 ${triggerClassName}`}
       >
         {items.map((item) => (
           <option key={item.value} value={item.value} disabled={item.disabled}>
@@ -58,7 +58,8 @@ export function SelectTrigger({ children }) {
 
 export function SelectValue() {
   const context = React.useContext(SelectContext);
-  return <>{context?.value || ""}</>;
+  const match = context?.items?.find((item) => item.value === context?.value);
+  return <>{match?.label || context?.value || ""}</>;
 }
 
 export function SelectContent({ children }) {
