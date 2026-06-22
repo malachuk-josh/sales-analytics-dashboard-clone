@@ -2982,10 +2982,52 @@ export default function SalesAnalyticsDashboardApp() {
                     <p className="text-[11px] text-[#9ba8bb]">Interactive KPI review, coaching recommendations, projections, and live insights across any imported date range.</p>
                   ) : null}
                 </div>
-                <div className="flex w-full max-w-[520px] flex-col items-stretch gap-1 xl:items-end">
+                <div className="flex w-full flex-col items-stretch gap-1 xl:items-end">
                   <div className="flex flex-wrap items-center justify-end gap-2">
                     {!isDashboardHeaderCollapsed ? (
                       <>
+                        <Select
+                          value={performanceTimeframe}
+                          onValueChange={(val) => {
+                            if (val === "manual") {
+                              setDashboardDraftRange({
+                                start: dateRange.start || datasetMinDate,
+                                end: dateRange.end || datasetMaxDate,
+                              });
+                              setDashboardRangeEditorOpen(true);
+                            } else {
+                              const nextRange = buildLookbackRange(val, dateRange.end || datasetMaxDate, datasetMinDate, datasetMaxDate);
+                              setPerformanceTimeframe(val);
+                              setDateRange(nextRange);
+                              setDashboardDraftRange(nextRange);
+                              setDashboardRangeEditorOpen(false);
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="h-[38px] w-[120px] rounded-[14px] border-[#cbd7e6] bg-[#f8fbff] px-2 text-[13px] font-semibold text-[#111827] shadow-[0_1px_1px_rgba(15,23,42,0.03)]">
+                            {performanceTimeframe === "manual"
+                              ? <span className="truncate">{effectiveRangeLabel}</span>
+                              : <SelectValue />
+                            }
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="7">7 Days</SelectItem>
+                            <SelectItem value="30">30 Days</SelectItem>
+                            <SelectItem value="60">60 Days</SelectItem>
+                            <SelectItem value="90">90 Days</SelectItem>
+                            <SelectItem value="manual">Custom...</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Select value={selectedProduct} onValueChange={setSelectedProduct}>
+                          <SelectTrigger className="h-[38px] w-[130px] rounded-[14px] border-[#cbd7e6] bg-[#f8fbff] px-2 text-[13px] font-semibold text-[#111827] shadow-[0_1px_1px_rgba(15,23,42,0.03)]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {productTabs.map((product) => (
+                              <SelectItem key={product} value={product}>{product}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <a
                           href="https://improveit360-9618.my.salesforce.com/00OPf000007Ws9J"
                           target="_blank"
@@ -3035,63 +3077,6 @@ export default function SalesAnalyticsDashboardApp() {
 
               {!isDashboardHeaderCollapsed ? (
                 <>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <Select
-                      value={performanceTimeframe}
-                      onValueChange={(val) => {
-                        if (val === "manual") {
-                          setDashboardDraftRange({
-                            start: dateRange.start || datasetMinDate,
-                            end: dateRange.end || datasetMaxDate,
-                          });
-                          setDashboardRangeEditorOpen(true);
-                        } else {
-                          const nextRange = buildLookbackRange(val, dateRange.end || datasetMaxDate, datasetMinDate, datasetMaxDate);
-                          setPerformanceTimeframe(val);
-                          setDateRange(nextRange);
-                          setDashboardDraftRange(nextRange);
-                          setDashboardRangeEditorOpen(false);
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="h-9 w-[180px] rounded-xl border border-[var(--border)] bg-[var(--panel-bg)] text-[13px] font-semibold text-[var(--text-soft)]">
-                        {performanceTimeframe === "manual"
-                          ? <span className="truncate text-[var(--text-soft)]">{effectiveRangeLabel}</span>
-                          : <SelectValue />
-                        }
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="7">Last 7 Days</SelectItem>
-                        <SelectItem value="30">Last 30 Days</SelectItem>
-                        <SelectItem value="60">Last 60 Days</SelectItem>
-                        <SelectItem value="90">Last 90 Days</SelectItem>
-                        <SelectItem
-                          value="manual"
-                          onPointerDown={() => {
-                            if (performanceTimeframe === "manual") {
-                              setDashboardDraftRange({
-                                start: dateRange.start || datasetMinDate,
-                                end: dateRange.end || datasetMaxDate,
-                              });
-                              setDashboardRangeEditorOpen(true);
-                            }
-                          }}
-                        >
-                          Custom Range...
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select value={selectedProduct} onValueChange={setSelectedProduct}>
-                      <SelectTrigger className="h-9 w-[160px] rounded-xl border border-[var(--border)] bg-[var(--panel-bg)] text-[13px] font-semibold text-[var(--text-soft)]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {productTabs.map((product) => (
-                          <SelectItem key={product} value={product}>{product}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
 
               {dashboardRangeEditorOpen ? (
                 <div className="mt-4 max-w-[560px] rounded-[28px] border border-[var(--border-strong)] bg-[var(--card-bg)]/95 p-5 shadow-2xl shadow-slate-950/40">
