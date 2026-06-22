@@ -40,7 +40,7 @@ export function Select({ value, onValueChange, children }) {
       <select
         value={value}
         onChange={(event) => onValueChange?.(event.target.value)}
-        className={`w-full rounded-md border border-slate-600 bg-slate-900/90 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-lime-400 ${triggerClassName}`}
+        className={`w-full rounded-md border border-[var(--border)] bg-[var(--panel-bg)] px-3 py-2 text-sm text-[var(--text-soft)] outline-none transition focus:border-lime-400 ${triggerClassName}`}
       >
         {items.map((item) => (
           <option key={item.value} value={item.value} disabled={item.disabled}>
