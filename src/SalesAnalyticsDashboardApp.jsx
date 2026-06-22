@@ -2842,7 +2842,7 @@ export default function SalesAnalyticsDashboardApp() {
                               }
                             }}
                           >
-                            <SelectTrigger className="w-full border-[var(--border)] bg-[var(--panel-bg)]"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="w-full rounded-md border-[var(--border)] bg-[var(--panel-bg)]"><SelectValue /></SelectTrigger>
                             <SelectContent>{groupOptions.map((group) => <SelectItem key={group.value} value={group.value}>{group.label}</SelectItem>)}</SelectContent>
                           </Select>
                           <Button
@@ -3005,11 +3005,8 @@ export default function SalesAnalyticsDashboardApp() {
                               }
                             }}
                           >
-                            <SelectTrigger className="h-[38px] w-[120px] rounded-[14px] border-[#cbd7e6] bg-[#f8fbff] px-2 text-[13px] font-semibold text-[#111827] shadow-[0_1px_1px_rgba(15,23,42,0.03)]">
-                              {performanceTimeframe === "manual"
-                                ? <span className="truncate">{effectiveRangeLabel}</span>
-                                : <SelectValue />
-                              }
+                            <SelectTrigger className="h-[38px] w-auto rounded-[14px] border-[#cbd7e6] bg-[#f8fbff] px-3 text-[13px] font-semibold text-[#111827] shadow-[0_1px_1px_rgba(15,23,42,0.03)]">
+                              <span className="truncate">{effectiveRangeLabel}</span>
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="7">7 Days</SelectItem>
@@ -4264,7 +4261,7 @@ export default function SalesAnalyticsDashboardApp() {
                             <div className="mt-3 grid grid-cols-[1fr_120px] items-center gap-2">
                               <div className="text-xs text-[var(--kpi-title)]">{currency(rep.netVolume)} net volume • {pct(rep.closePct, 0)} close</div>
                               <Select value={team.name} onValueChange={(value) => moveRepToTeam(rep.rep, value)}>
-                                <SelectTrigger className="h-8 w-full border-[var(--border)] bg-[var(--panel-bg)] text-xs text-[var(--text-soft)]">
+                                <SelectTrigger className="h-8 w-full rounded-md border-[var(--border)] bg-[var(--panel-bg)] text-xs text-[var(--text-soft)]">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
