@@ -3005,7 +3005,7 @@ export default function SalesAnalyticsDashboardApp() {
                             {timeframeDropdownOpen && (
                               <>
                                 <div className="fixed inset-0 z-40" onClick={() => setTimeframeDropdownOpen(false)} />
-                                <div className="absolute left-0 top-full z-50 mt-1 min-w-full overflow-hidden rounded-xl border border-[#cbd7e6] bg-[#f8fbff] py-1 shadow-lg">
+                                <div className="absolute left-0 top-full z-50 mt-1 min-w-full overflow-hidden rounded-xl border border-[#cbd7e6] py-1 shadow-lg" style={{ background: "#ffffff" }}>
                                   {["7", "30", "60", "90"].map((n) => (
                                     <button
                                       key={n}
