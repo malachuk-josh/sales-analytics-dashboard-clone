@@ -2995,7 +2995,17 @@ export default function SalesAnalyticsDashboardApp() {
                             <span className="whitespace-nowrap">{performanceTimeframe === "manual" ? effectiveRangeLabel : `${performanceTimeframe} Days`}</span>
                             <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="absolute right-2.5 shrink-0"><polyline points="6 9 12 15 18 9"/></svg>
                             <select
-                              value={performanceTimeframe === "manual" ? "" : performanceTimeframe}
+                              value={performanceTimeframe}
+                              onMouseDown={(e) => {
+                                if (performanceTimeframe === "manual") {
+                                  e.preventDefault();
+                                  setDashboardDraftRange({
+                                    start: dateRange.start || datasetMinDate,
+                                    end: dateRange.end || datasetMaxDate,
+                                  });
+                                  setDashboardRangeEditorOpen(true);
+                                }
+                              }}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 if (val === "manual") {
@@ -3004,7 +3014,7 @@ export default function SalesAnalyticsDashboardApp() {
                                     end: dateRange.end || datasetMaxDate,
                                   });
                                   setDashboardRangeEditorOpen(true);
-                                } else if (val) {
+                                } else {
                                   const nextRange = buildLookbackRange(val, dateRange.end || datasetMaxDate, datasetMinDate, datasetMaxDate);
                                   setPerformanceTimeframe(val);
                                   setDateRange(nextRange);
