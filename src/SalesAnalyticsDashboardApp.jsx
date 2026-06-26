@@ -2987,54 +2987,24 @@ export default function SalesAnalyticsDashboardApp() {
                     {!isDashboardHeaderCollapsed ? (
                       <>
                         <div className="mr-auto flex items-center gap-2">
-                          {performanceTimeframe === "manual" ? (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setDashboardDraftRange({
-                                    start: dateRange.start || datasetMinDate,
-                                    end: dateRange.end || datasetMaxDate,
-                                  });
-                                  setDashboardRangeEditorOpen(true);
-                                }}
-                                className="inline-flex h-[38px] items-center rounded-[14px] border border-[#cbd7e6] bg-[#f8fbff] px-3 text-[13px] font-semibold text-[#111827] shadow-[0_1px_1px_rgba(15,23,42,0.03)] transition hover:bg-white"
-                              >
-                                {effectiveRangeLabel}
-                              </button>
-                              <Select
-                                value=""
-                                onValueChange={(val) => {
-                                  if (!val) return;
-                                  const nextRange = buildLookbackRange(val, dateRange.end || datasetMaxDate, datasetMinDate, datasetMaxDate);
-                                  setPerformanceTimeframe(val);
-                                  setDateRange(nextRange);
-                                  setDashboardDraftRange(nextRange);
-                                  setDashboardRangeEditorOpen(false);
-                                }}
-                              >
-                                <SelectTrigger className="h-[38px] w-auto rounded-[14px] border-[#cbd7e6] bg-[#f8fbff] px-3 text-[13px] font-semibold text-[#111827] shadow-[0_1px_1px_rgba(15,23,42,0.03)]">
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="" disabled>Preset</SelectItem>
-                                  <SelectItem value="7">7 Days</SelectItem>
-                                  <SelectItem value="30">30 Days</SelectItem>
-                                  <SelectItem value="60">60 Days</SelectItem>
-                                  <SelectItem value="90">90 Days</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </>
-                          ) : (
-                            <Select
-                              value={performanceTimeframe}
-                              onValueChange={(val) => {
+                          <div
+                            className="relative inline-flex cursor-pointer items-center gap-1.5 pl-3 pr-7 text-[13px] font-semibold transition hover:bg-white"
+                            style={actionPillStyle}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span className="whitespace-nowrap">{performanceTimeframe === "manual" ? effectiveRangeLabel : `${performanceTimeframe} Days`}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="absolute right-2.5 shrink-0"><polyline points="6 9 12 15 18 9"/></svg>
+                            <select
+                              value={performanceTimeframe === "manual" ? "" : performanceTimeframe}
+                              onChange={(e) => {
+                                const val = e.target.value;
                                 if (val === "manual") {
                                   setDashboardDraftRange({
                                     start: dateRange.start || datasetMinDate,
                                     end: dateRange.end || datasetMaxDate,
                                   });
                                   setDashboardRangeEditorOpen(true);
-                                } else {
+                                } else if (val) {
                                   const nextRange = buildLookbackRange(val, dateRange.end || datasetMaxDate, datasetMinDate, datasetMaxDate);
                                   setPerformanceTimeframe(val);
                                   setDateRange(nextRange);
@@ -3042,19 +3012,16 @@ export default function SalesAnalyticsDashboardApp() {
                                   setDashboardRangeEditorOpen(false);
                                 }
                               }}
+                              className="absolute inset-0 cursor-pointer opacity-0"
+                              style={{ appearance: "none", WebkitAppearance: "none", width: "100%", height: "100%" }}
                             >
-                              <SelectTrigger className="h-[38px] w-auto rounded-[14px] border-[#cbd7e6] bg-[#f8fbff] px-3 text-[13px] font-semibold text-[#111827] shadow-[0_1px_1px_rgba(15,23,42,0.03)]">
-                                <span className="truncate">{effectiveRangeLabel}</span>
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="7">7 Days</SelectItem>
-                                <SelectItem value="30">30 Days</SelectItem>
-                                <SelectItem value="60">60 Days</SelectItem>
-                                <SelectItem value="90">90 Days</SelectItem>
-                                <SelectItem value="manual">Custom...</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          )}
+                              <option value="7">7 Days</option>
+                              <option value="30">30 Days</option>
+                              <option value="60">60 Days</option>
+                              <option value="90">90 Days</option>
+                              <option value="manual">Edit Custom Range...</option>
+                            </select>
+                          </div>
                           <Select value={selectedProduct} onValueChange={setSelectedProduct}>
                             <SelectTrigger className="h-[38px] w-[130px] rounded-[14px] border-[#cbd7e6] bg-[#f8fbff] px-2 text-[13px] font-semibold text-[#111827] shadow-[0_1px_1px_rgba(15,23,42,0.03)]">
                               <SelectValue />
