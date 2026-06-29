@@ -190,7 +190,7 @@ const DEFAULT_KPI_COLOR_BANDS = {
 
 const DEFAULT_ANNUAL_VOLUME_BANDS = {
   greenMin: DEFAULT_GOAL_TARGETS.annualNetVolume,
-  yellowMin: DEFAULT_GOAL_TARGETS.annualNetVolume * 0.9,
+  yellowMin: DEFAULT_GOAL_TARGETS.annualNetVolume * 0.85,
 };
 
 const TEAM_DEFAULT_ANNUAL_NET_VOLUME = { WMASS: 12000000, EMASS: 12000000, Albany: 8000000, CT: 8000000, Exterior: 2000000 };
@@ -2068,12 +2068,12 @@ export default function SalesAnalyticsDashboardApp() {
   const effectiveVolumeBands = useMemo(() => {
     if (selectedRep !== "All Reps" && safeNum(individualGoalOverride.annualNetVolume) > 0) {
       const greenMin = safeNum(individualGoalOverride.annualNetVolume);
-      return { greenMin, yellowMin: greenMin * 0.9 };
+      return { greenMin, yellowMin: greenMin * 0.85 };
     }
     const override = teamGoalOverrides[selectedGroup];
     if (override && safeNum(override.annualNetVolume) > 0) {
       const greenMin = safeNum(override.annualNetVolume);
-      return { greenMin, yellowMin: greenMin * 0.9 };
+      return { greenMin, yellowMin: greenMin * 0.85 };
     }
     return annualVolumeBands;
   }, [selectedRep, individualGoalOverride, teamGoalOverrides, selectedGroup, annualVolumeBands]);
