@@ -1,7 +1,7 @@
 import React from "react";
 
 export function Card({ className = "", ...props }) {
-  return <div className={`rounded-xl border shadow-sm ${className}`} {...props} />;
+  return <div className={`glass-surface rounded-xl border shadow-sm ${className}`} {...props} />;
 }
 
 export function CardHeader({ className = "", ...props }) {
