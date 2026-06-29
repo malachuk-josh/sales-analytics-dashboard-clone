@@ -297,6 +297,25 @@ function getMostRecentSunday() {
 const DEFAULT_DATE_START = "2026-01-01";
 const DEFAULT_DATE_END = getMostRecentSunday();
 
+// Returns the most recent complete Monday–Sunday week ending on or before the
+// given date (defaults to the dataset's max date). e.g. a max date of 6/29/2026
+// (a Monday) yields { start: 6/22/2026, end: 6/28/2026 }.
+function getLastWeekRange(anchorIso, minIso = "") {
+  const base = anchorIso ? new Date(`${anchorIso}T00:00:00`) : new Date();
+  if (Number.isNaN(base.getTime())) return { start: "", end: "" };
+  base.setHours(0, 0, 0, 0);
+  const sunday = new Date(base);
+  sunday.setDate(sunday.getDate() - sunday.getDay()); // most recent Sunday on/before anchor
+  const monday = new Date(sunday);
+  monday.setDate(monday.getDate() - 6); // Monday of that week
+  let startIso = toIsoDate(monday);
+  if (minIso) {
+    const minDate = new Date(`${minIso}T00:00:00`);
+    if (!Number.isNaN(minDate.getTime()) && monday < minDate) startIso = minIso;
+  }
+  return { start: startIso, end: toIsoDate(sunday) };
+}
+
 function formatDisplayDate(value) {
   if (!value) return "";
   const date = typeof value === "string" && value.includes("-") ? new Date(`${value}T00:00:00`) : parseUsDate(value);
@@ -1587,9 +1606,9 @@ export default function SalesAnalyticsDashboardApp() {
   const [dateRange, setDateRange] = useState({ start: DEFAULT_DATE_START, end: DEFAULT_DATE_END });
   const [dashboardRangeEditorOpen, setDashboardRangeEditorOpen] = useState(false);
   const [dashboardDraftRange, setDashboardDraftRange] = useState({ start: DEFAULT_DATE_START, end: DEFAULT_DATE_END });
-  const [scorecardDateRange, setScorecardDateRange] = useState({ start: DEFAULT_DATE_START, end: DEFAULT_DATE_END });
+  const [scorecardDateRange, setScorecardDateRange] = useState(() => getLastWeekRange(embeddedDemoBounds.maxDate, embeddedDemoBounds.minDate));
   const [scorecardRangeEditorOpen, setScorecardRangeEditorOpen] = useState(false);
-  const [scorecardDraftRange, setScorecardDraftRange] = useState({ start: DEFAULT_DATE_START, end: DEFAULT_DATE_END });
+  const [scorecardDraftRange, setScorecardDraftRange] = useState(() => getLastWeekRange(embeddedDemoBounds.maxDate, embeddedDemoBounds.minDate));
   const [projectorAdjustments, setProjectorAdjustments] = useState({
     demoPct: 0,
     closePct: 0,
@@ -1640,6 +1659,7 @@ export default function SalesAnalyticsDashboardApp() {
         if (!parsed || isCancelled) return;
 
         const initialRange = { start: DEFAULT_DATE_START, end: DEFAULT_DATE_END };
+        const scorecardRange = getLastWeekRange(parsed.maxDate, parsed.minDate);
 
         setUploadMeta({ workbookName: DEFAULT_DATA_FILE_NAME, sheetNames: parsed.sheetNames || [] });
         setUploadData(parsed);
@@ -1647,8 +1667,8 @@ export default function SalesAnalyticsDashboardApp() {
         setRepSearch("");
         setDateRange(initialRange);
         setDashboardDraftRange(initialRange);
-        setScorecardDateRange(initialRange);
-        setScorecardDraftRange(initialRange);
+        setScorecardDateRange(scorecardRange);
+        setScorecardDraftRange(scorecardRange);
         setProjectorManualRange(initialRange);
         setProjectorDraftRange(initialRange);
         setDashboardRangeEditorOpen(false);
@@ -2746,6 +2766,7 @@ export default function SalesAnalyticsDashboardApp() {
     const parsedMinDate = parsed?.minDate || embeddedDemoBounds.minDate;
     const parsedMaxDate = parsed?.maxDate || embeddedDemoBounds.maxDate || toIsoDate(new Date());
     const initialRange = { start: parsedMinDate, end: parsedMaxDate };
+    const scorecardRange = getLastWeekRange(parsedMaxDate, parsedMinDate);
 
     setUploadMeta({ workbookName: file.name, sheetNames: parsed.sheetNames || [] });
     setUploadData(parsed);
@@ -2753,8 +2774,8 @@ export default function SalesAnalyticsDashboardApp() {
     setRepSearch("");
     setDateRange(initialRange);
     setDashboardDraftRange(initialRange);
-    setScorecardDateRange(initialRange);
-    setScorecardDraftRange(initialRange);
+    setScorecardDateRange(scorecardRange);
+    setScorecardDraftRange(scorecardRange);
     setProjectorManualRange(initialRange);
     setProjectorDraftRange(initialRange);
     setDashboardRangeEditorOpen(false);
