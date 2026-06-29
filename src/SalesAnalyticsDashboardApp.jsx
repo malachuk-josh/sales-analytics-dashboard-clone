@@ -1689,12 +1689,13 @@ export default function SalesAnalyticsDashboardApp() {
     isDarkMode
       ? {
           "--app-bg": "#171d26",
+          "--app-bg-image": "radial-gradient(900px 520px at 8% -8%, rgba(56, 189, 248, 0.14), transparent 60%), radial-gradient(820px 540px at 102% 4%, rgba(132, 204, 22, 0.10), transparent 55%), radial-gradient(760px 620px at 50% 112%, rgba(99, 102, 241, 0.12), transparent 60%)",
           "--app-text": "#e2e8f0",
-          "--sidebar-bg": "#1f2733",
+          "--sidebar-bg": "rgba(31, 39, 51, 0.68)",
           "--sidebar-border": "#394557",
-          "--header-bg": "rgba(27, 36, 48, 0.96)",
-          "--card-bg": "#2d3642",
-          "--panel-bg": "#212937",
+          "--header-bg": "rgba(27, 36, 48, 0.72)",
+          "--card-bg": "rgba(45, 54, 66, 0.62)",
+          "--panel-bg": "rgba(33, 41, 55, 0.55)",
           "--button-bg": "#283243",
           "--button-hover": "#313d52",
           "--button-active-bg": "#364253",
@@ -1702,7 +1703,7 @@ export default function SalesAnalyticsDashboardApp() {
           "--border-strong": "#465267",
           "--text-strong": "#f8fafc",
           "--text-soft": "#cbd5e1",
-          "--sidebar-card-bg": "#2a3240",
+          "--sidebar-card-bg": "rgba(42, 50, 64, 0.62)",
           "--chart-label": "#cfd8e6",
           "--toggle-active-border": "#76a83a",
           "--toggle-active-bg": "#314926",
@@ -1726,12 +1727,13 @@ export default function SalesAnalyticsDashboardApp() {
         }
       : {
           "--app-bg": "#eef3f8",
+          "--app-bg-image": "radial-gradient(900px 520px at 8% -8%, rgba(56, 189, 248, 0.20), transparent 60%), radial-gradient(820px 540px at 102% 4%, rgba(129, 140, 248, 0.18), transparent 55%), radial-gradient(760px 620px at 50% 112%, rgba(45, 212, 191, 0.14), transparent 60%)",
           "--app-text": "#0f172a",
-          "--sidebar-bg": "#e7edf4",
+          "--sidebar-bg": "rgba(231, 237, 244, 0.66)",
           "--sidebar-border": "#d7e0ea",
-          "--header-bg": "rgba(231, 237, 244, 0.80)",
-          "--card-bg": "#ffffff",
-          "--panel-bg": "#f5f8fc",
+          "--header-bg": "rgba(231, 237, 244, 0.66)",
+          "--card-bg": "rgba(255, 255, 255, 0.62)",
+          "--panel-bg": "rgba(255, 255, 255, 0.55)",
           "--button-bg": "#edf2f7",
           "--button-hover": "#e3eaf3",
           "--button-active-bg": "#dce7f4",
@@ -1739,7 +1741,7 @@ export default function SalesAnalyticsDashboardApp() {
           "--border-strong": "#c6d2df",
           "--text-strong": "#0f172a",
           "--text-soft": "#475569",
-          "--sidebar-card-bg": "#ffffff",
+          "--sidebar-card-bg": "rgba(255, 255, 255, 0.66)",
           "--chart-label": "#334155",
           "--toggle-active-border": "#8ea4c3",
           "--toggle-active-bg": "#dce7f4",
@@ -2789,11 +2791,13 @@ export default function SalesAnalyticsDashboardApp() {
       className="min-h-screen bg-[var(--app-bg)] text-[var(--app-text)] tracking-[-0.01em]"
       style={{
         ...themeVars,
+        backgroundImage: "var(--app-bg-image)",
+        backgroundAttachment: "fixed",
         fontFamily: "'Rajdhani', 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       }}
     >
       <div className="grid min-h-screen grid-cols-12 lg:grid-cols-[auto_minmax(0,1fr)]">
-        <aside className={`col-span-12 border-b border-[var(--sidebar-border)] bg-[var(--sidebar-bg)] p-4 transition-all duration-200 lg:sticky lg:top-0 lg:col-span-1 lg:h-screen lg:self-start lg:overflow-y-auto lg:border-b-0 lg:border-r lg:pb-10 ${isSidebarCollapsed ? "lg:w-[88px]" : "lg:w-[280px]"}`}>
+        <aside className={`glass-surface col-span-12 border-b border-[var(--sidebar-border)] bg-[var(--sidebar-bg)] p-4 transition-all duration-200 lg:sticky lg:top-0 lg:col-span-1 lg:h-screen lg:self-start lg:overflow-y-auto lg:border-b-0 lg:border-r lg:pb-10 ${isSidebarCollapsed ? "lg:w-[88px]" : "lg:w-[280px]"}`}>
           {isSidebarCollapsed ? (
             <div className="flex flex-col items-center gap-3 pt-1">
               <Button

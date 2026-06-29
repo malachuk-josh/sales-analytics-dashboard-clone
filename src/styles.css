@@ -30,3 +30,27 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .recharts-wrapper {
   outline: none;
 }
+
+/* ---- Glassmorphism ---- */
+/* Frosted translucency for primary surfaces. Pairs with the translucent
+   --card-bg / --panel-bg / --sidebar-bg theme variables so the gradient
+   app background shows through with a blur. */
+.glass-surface {
+  backdrop-filter: blur(16px) saturate(135%);
+  -webkit-backdrop-filter: blur(16px) saturate(135%);
+}
+
+/* Subtle frosting for smaller nested panels. */
+.glass-panel {
+  backdrop-filter: blur(10px) saturate(125%);
+  -webkit-backdrop-filter: blur(10px) saturate(125%);
+}
+
+/* Graceful fallback: if the browser can't blur the backdrop, lean on the
+   solid base colors so translucent surfaces never become hard to read. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-surface,
+  .glass-panel {
+    background-color: var(--app-bg);
+  }
+}
